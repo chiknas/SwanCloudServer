@@ -24,10 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -139,8 +136,15 @@ public class FileService {
         moveFile(file, path, LocalDate.EPOCH);
     }
 
+    public void moveFile(UUID fileId, Path path, LocalDate createdDate) {
+        fileMetadataRepository.findById(fileId)
+                .ifPresent(fileMetadata -> moveFile(new File(fileMetadata.getPath()), path, createdDate));
+    }
+
     /**
      * Moves the specified file to the new path. Make sure the path exists before calling this method.
+     * The system will try to figure out the file creation date from the file metadata. if this is already known,
+     * pass the createdDate
      */
     public void moveFile(File file, Path path, LocalDate createdDate) {
         try {
@@ -156,7 +160,13 @@ public class FileService {
                         }
                         fileMetadataRepository.save(fileMetadata);
                     },
-                    () -> fileMetadataRepository.save(Objects.requireNonNull(fileMetadataConverter.convert(moveLocation)))
+                    () -> {
+                        FileMetadataEntity fileMetadata = Objects.requireNonNull(fileMetadataConverter.convert(moveLocation));
+                        if (createdDate != null) {
+                            fileMetadata.setCreatedDate(createdDate);
+                        }
+                        fileMetadataRepository.save(fileMetadata);
+                    }
             );
         } catch (Exception e) {
             log.error(String.format("Failed to move file: %s to path: %s", file.getName(), path), e);

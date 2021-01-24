@@ -6,12 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Organises the file passed in by year and month of the file's creation date.
@@ -42,6 +40,13 @@ public class FileOrganiserService {
         processList();
     }
 
+    /**
+     * Re-categorizes a file based the passed in date.
+     */
+    public void categorizeFile(UUID fileId, LocalDate creationDate){
+        fileService.moveFile(fileId, createPathFromDate(creationDate), creationDate);
+    }
+
     private void processList() {
         Iterator<File> iterator = files.iterator();
         while (iterator.hasNext()) {
@@ -59,13 +64,17 @@ public class FileOrganiserService {
     private void processFile(File file) {
         Optional<LocalDate> creationDate = FileService.getCreationDate(file);
         creationDate.ifPresentOrElse(date -> {
-            File yearDir = new File(filesBasePath + "/" + date.getYear() + "/" + date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
-            yearDir.mkdirs();
-            fileService.moveFile(file, yearDir.toPath(), date);
+            fileService.moveFile(file, createPathFromDate(date), date);
         }, () -> {
             File uncategorizedDir = new File(filesBasePath + "/uncategorized");
             uncategorizedDir.mkdirs();
             fileService.moveFile(file, uncategorizedDir.toPath());
         });
+    }
+
+    private Path createPathFromDate(LocalDate date){
+        File yearDir = new File(filesBasePath + "/" + date.getYear() + "/" + date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
+        yearDir.mkdirs();
+        return yearDir.toPath();
     }
 }
