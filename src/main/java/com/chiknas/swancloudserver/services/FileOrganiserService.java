@@ -1,19 +1,17 @@
 package com.chiknas.swancloudserver.services;
 
-import com.chiknas.swancloudserver.converters.FileMetadataConverter;
-import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Organises the file passed in by year and month of the file's creation date.
@@ -24,17 +22,16 @@ import java.util.*;
 @Slf4j
 @Service
 public class FileOrganiserService {
-    private final FileMetadataRepository fileMetadataRepository;
-    private final FileMetadataConverter fileMetadataConverter;
+
+    private final FileService fileService;
 
     @Value("${files.base-path}")
     private final String filesBasePath = System.getProperty("user.dir");
     private final ArrayList<File> files = new ArrayList<>();
 
     @Autowired
-    public FileOrganiserService(FileMetadataRepository fileMetadataRepository, FileMetadataConverter fileMetadataConverter) {
-        this.fileMetadataRepository = fileMetadataRepository;
-        this.fileMetadataConverter = fileMetadataConverter;
+    public FileOrganiserService(FileService fileService) {
+        this.fileService = fileService;
     }
 
     /**
@@ -57,28 +54,18 @@ public class FileOrganiserService {
     }
 
     /**
-     * Organises the file to the correct folder by date. If date is not available nothing should happen.
+     * Organises the file to the correct folder by date. If date is not available it organises the file to generic uncategorized folder for manual categorization.
      */
     private void processFile(File file) {
-        Optional<LocalDate> optionalDate = FileService.getCreationDate(file);
-        // TODO: write an orElse method that will move uncategorized images to an uncategorized folder for manual sorting
-        optionalDate.ifPresent(date -> {
+        Optional<LocalDate> creationDate = FileService.getCreationDate(file);
+        creationDate.ifPresentOrElse(date -> {
             File yearDir = new File(filesBasePath + "/" + date.getYear() + "/" + date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
-            if (!yearDir.exists()) {
-                yearDir.mkdirs();
-            }
-
-            try {
-                File fileOrganisedLocation = new File(yearDir.toPath() + "/" + file.getName());
-                Files.move(file.toPath(), fileOrganisedLocation.toPath(), StandardCopyOption.ATOMIC_MOVE);
-
-                // keep track of the file metadata if it doesn't already exists
-                if (!fileMetadataRepository.existsByFileName(file.getName())) {
-                    fileMetadataRepository.save(Objects.requireNonNull(fileMetadataConverter.convert(fileOrganisedLocation)));
-                }
-            } catch (IOException e) {
-                log.error("Failed to move file: " + file.getName(), e);
-            }
+            yearDir.mkdirs();
+            fileService.moveFile(file, yearDir.toPath(), date);
+        }, () -> {
+            File uncategorizedDir = new File(filesBasePath + "/uncategorized");
+            uncategorizedDir.mkdirs();
+            fileService.moveFile(file, uncategorizedDir.toPath());
         });
     }
 }

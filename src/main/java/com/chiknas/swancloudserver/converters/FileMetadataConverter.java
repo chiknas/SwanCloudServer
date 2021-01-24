@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 
 @Service
 public class FileMetadataConverter implements Converter<File, FileMetadataEntity> {
@@ -25,16 +26,18 @@ public class FileMetadataConverter implements Converter<File, FileMetadataEntity
         FileMetadataEntity fileMetadataEntity = new FileMetadataEntity();
         fileMetadataEntity.setFileName(file.getName());
         fileMetadataEntity.setPath(file.getAbsolutePath());
-        FileService.getCreationDate(file).ifPresent(fileMetadataEntity::setCreatedDate);
+        FileService.getCreationDate(file).ifPresentOrElse(fileMetadataEntity::setCreatedDate,
+                () -> fileMetadataEntity.setCreatedDate(LocalDate.EPOCH));
 
         BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
         try {
             String mimeType = Files.probeContentType(Path.of(file.getAbsolutePath()));
             if (mimeType.contains("video")) {
                 FFmpegFrameGrabber g = new FFmpegFrameGrabber(file.getAbsolutePath());
+                g.setFormat("mp4");
                 g.start();
                 thumbnail = new Java2DFrameConverter().convert(g.grabImage());
-                g.stop();
+                g.close();
             } else if (mimeType.contains("image")) {
                 thumbnail.createGraphics().drawImage(ImageIO.read(file).getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0,
                         0, null);

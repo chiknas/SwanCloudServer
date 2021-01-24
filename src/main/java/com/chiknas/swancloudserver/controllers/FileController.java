@@ -29,4 +29,9 @@ public class FileController {
         return fileService.findAllFilesMetadata();
     }
 
+    @GetMapping("/files/uncategorized")
+    public List<FileMetadataEntity> getUncategorizedFiles() {
+        return fileService.findAllUncategorizedFilesMetadata();
+    }
+
 }
