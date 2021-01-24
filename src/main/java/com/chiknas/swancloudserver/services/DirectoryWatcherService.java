@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -12,6 +13,7 @@ import java.nio.file.*;
 /**
  * Class that keeps an a eye on a folder specified by the directory.source to allow the program to pick up new files
  * for process.
+ *
  * @author nkukn
  * @since 1/23/2021
  */
@@ -27,6 +29,12 @@ public class DirectoryWatcherService implements Runnable {
     @Autowired
     public DirectoryWatcherService(FileOrganiserService fileOrganiserService) {
         this.fileOrganiserService = fileOrganiserService;
+    }
+
+    @PostConstruct
+    public void onStartUp() {
+        new Thread(this, "watcher-service").start();
+        log.info("Started base path watcher service.");
     }
 
     @Override

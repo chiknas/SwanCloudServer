@@ -2,6 +2,7 @@ package com.chiknas.swancloudserver.converters;
 
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.services.FileService;
+import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.core.convert.converter.Converter;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
+@Slf4j
 @Service
 public class FileMetadataConverter implements Converter<File, FileMetadataEntity> {
 
@@ -45,7 +47,7 @@ public class FileMetadataConverter implements Converter<File, FileMetadataEntity
 
             fileMetadataEntity.setThumbnail(toByteArray(thumbnail));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Could not create thumbnail for file.", e);
         }
         return fileMetadataEntity;
     }

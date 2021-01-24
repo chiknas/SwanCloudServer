@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.*;
 
@@ -32,6 +33,23 @@ public class FileOrganiserService {
         this.fileService = fileService;
     }
 
+    public static Optional<LocalDate> getLocalDateFromPath(String path) {
+        Optional<Month> fileInMonth = Arrays.stream(Month.values())
+                .filter(month -> path.toLowerCase().contains(month.toString().toLowerCase()))
+                .findFirst();
+        if (fileInMonth.isPresent()) {
+            Month month = fileInMonth.get();
+            int indexOfMonth = path.toLowerCase().indexOf(month.toString().toLowerCase());
+            String yearString = path.substring(indexOfMonth - 5, indexOfMonth - 1);
+            try {
+                return Optional.of(LocalDate.of(Integer.parseInt(yearString), month, 1));
+            } catch (NumberFormatException e) {
+                log.error(String.format("Failed to get date from the current path: %s", path), e);
+            }
+        }
+        return Optional.empty();
+    }
+
     /**
      * Method to add files to the list to be organised by the system.
      */
@@ -43,7 +61,7 @@ public class FileOrganiserService {
     /**
      * Re-categorizes a file based the passed in date.
      */
-    public void categorizeFile(UUID fileId, LocalDate creationDate){
+    public void reCategorizeFile(UUID fileId, LocalDate creationDate) {
         fileService.moveFile(fileId, createPathFromDate(creationDate), creationDate);
     }
 
@@ -63,16 +81,15 @@ public class FileOrganiserService {
      */
     private void processFile(File file) {
         Optional<LocalDate> creationDate = FileService.getCreationDate(file);
-        creationDate.ifPresentOrElse(date -> {
-            fileService.moveFile(file, createPathFromDate(date), date);
-        }, () -> {
-            File uncategorizedDir = new File(filesBasePath + "/uncategorized");
-            uncategorizedDir.mkdirs();
-            fileService.moveFile(file, uncategorizedDir.toPath());
-        });
+        creationDate.ifPresentOrElse(date -> fileService.moveFile(file, createPathFromDate(date), date),
+                () -> {
+                    File uncategorizedDir = new File(filesBasePath + "/uncategorized");
+                    uncategorizedDir.mkdirs();
+                    fileService.moveFile(file, uncategorizedDir.toPath());
+                });
     }
 
-    private Path createPathFromDate(LocalDate date){
+    private Path createPathFromDate(LocalDate date) {
         File yearDir = new File(filesBasePath + "/" + date.getYear() + "/" + date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
         yearDir.mkdirs();
         return yearDir.toPath();

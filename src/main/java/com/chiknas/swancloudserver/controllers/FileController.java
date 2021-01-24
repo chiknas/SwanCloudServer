@@ -30,7 +30,7 @@ public class FileController {
 
     @PostMapping("/file/set-date")
     public void setFileDate(@RequestBody SetFileDateDTO fileDTO) {
-        fileOrganiserService.categorizeFile(fileDTO.getFileId(), fileDTO.getCreationDate());
+        fileOrganiserService.reCategorizeFile(fileDTO.getFileId(), fileDTO.getCreationDate());
     }
 
     @GetMapping("/files")
