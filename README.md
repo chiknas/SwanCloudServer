@@ -1,6 +1,7 @@
 # Swan Cloud Server
 
-Spring boot api to handle photo/video files upload and organisation. The server will save uploaded media files in the file system that is running on and in the specified base path (see env variables below). It organises the media files based on the date the photo/video was taken.
+Spring boot api to handle photo/video files upload and organisation. The server will save uploaded media files in the file system that is running on and in the specified base path (see env variables below). It organises the media files based on the date the photo/video was taken.  
+Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html) to get details on the API.
 
 ## Env variables
 

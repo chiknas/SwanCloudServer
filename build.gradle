@@ -24,6 +24,7 @@ dependencies {
     implementation 'com.h2database:h2:1.4.200'
 	implementation 'org.bytedeco:javacv-platform:1.5.4'
 	implementation 'com.drewnoakes:metadata-extractor:2.15.0'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.5.3'
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
