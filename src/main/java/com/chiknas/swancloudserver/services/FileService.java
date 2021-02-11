@@ -3,6 +3,9 @@ package com.chiknas.swancloudserver.services;
 import com.chiknas.swancloudserver.converters.FileMetadataConverter;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
+import com.chiknas.swancloudserver.repositories.cursorpagination.CursorPage;
+import com.chiknas.swancloudserver.repositories.cursorpagination.CursorUtils;
+import com.chiknas.swancloudserver.repositories.cursorpagination.cursors.FileMetadataCursor;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,7 +28,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -67,18 +74,43 @@ public class FileService {
     /**
      * Returns the metadata for all the files that are currently in the system.
      */
-    public List<FileMetadataEntity> findAllFilesMetadata() {
-        return fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"));
-    }
+    public CursorPage<FileMetadataEntity> findAllFilesMetadata(FileMetadataCursor fileMetadataCursor, int limit, boolean uncategorized) {
+        List<FileMetadataEntity> allAfterCursor;
 
-    /**
-     * Returns all metadata for the uncategorized files in the system. An uncategorised file will live in the uncategorized folder and the
-     * metadata creation date is LocalDate.EPOCH
-     */
-    public List<FileMetadataEntity> findAllUncategorizedFilesMetadata() {
-        FileMetadataEntity fileMetadataEntity = new FileMetadataEntity();
-        fileMetadataEntity.setCreatedDate(LocalDate.EPOCH);
-        return fileMetadataRepository.findAll(Example.of(fileMetadataEntity), Sort.by(Sort.Direction.DESC, "createdDate"));
+        if (fileMetadataCursor != null) {
+            allAfterCursor = uncategorized || fileMetadataCursor.getCreatedDate().equals(LocalDate.EPOCH)
+                    ? fileMetadataRepository
+                    .findAllUncategorizedAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId())
+                    : fileMetadataRepository
+                    .findAllAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId(), fileMetadataCursor.getCreatedDate());
+        } else {
+            FileMetadataEntity fileMetadataEntity = new FileMetadataEntity();
+            fileMetadataEntity.setCreatedDate(LocalDate.EPOCH);
+
+            allAfterCursor = uncategorized
+                    ? fileMetadataRepository
+                    .findAll(Example.of(fileMetadataEntity), PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC, "id"))).getContent()
+                    : fileMetadataRepository
+                    .findAll(PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC, "createdDate"))).getContent();
+        }
+
+        return new CursorPage<>() {
+
+            @Override
+            public String getNextCursor() {
+                return allAfterCursor.size() > limit
+                        ? CursorUtils.toBase64(FileMetadataCursor.builder()
+                        .id(allAfterCursor.get(allAfterCursor.size() - 1).getId())
+                        .createdDate(allAfterCursor.get(allAfterCursor.size() - 1).getCreatedDate())
+                        .build())
+                        : null;
+            }
+
+            @Override
+            public List<FileMetadataEntity> getNodes() {
+                return allAfterCursor.size() > limit ? allAfterCursor.subList(0, limit) : allAfterCursor;
+            }
+        };
     }
 
     /**
@@ -136,7 +168,7 @@ public class FileService {
         moveFile(file, path, LocalDate.EPOCH);
     }
 
-    public void moveFile(UUID fileId, Path path, LocalDate createdDate) {
+    public void moveFile(Integer fileId, Path path, LocalDate createdDate) {
         fileMetadataRepository.findById(fileId)
                 .ifPresent(fileMetadata -> moveFile(new File(fileMetadata.getPath()), path, createdDate));
     }

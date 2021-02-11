@@ -52,7 +52,9 @@ public class IndexingService {
 
         try (Stream<Path> paths = Files.walk(Path.of(filesBasePath), Integer.MAX_VALUE)) {
             log.info("Starting indexing of files.");
-            paths.forEach(path -> {
+            long startTime = System.currentTimeMillis();
+
+            paths.parallel().forEach(path -> {
                 File file = new File(path.toString());
                 // ignore directories
                 if (file.isFile()) {
@@ -72,7 +74,7 @@ public class IndexingService {
 
                 }
             });
-            log.info("Indexing is complete!");
+            log.info("Indexing completed in: {}sec", (System.currentTimeMillis() - startTime) / 1000);
         } catch (IOException e) {
             log.error("Failed to index base path.", e);
         }
