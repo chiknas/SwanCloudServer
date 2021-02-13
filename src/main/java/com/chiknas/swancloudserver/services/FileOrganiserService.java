@@ -61,7 +61,7 @@ public class FileOrganiserService {
     /**
      * Re-categorizes a file based the passed in date.
      */
-    public void reCategorizeFile(UUID fileId, LocalDate creationDate) {
+    public void reCategorizeFile(Integer fileId, LocalDate creationDate) {
         fileService.moveFile(fileId, createPathFromDate(creationDate), creationDate);
     }
 
