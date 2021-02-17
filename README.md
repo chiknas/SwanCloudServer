@@ -1,11 +1,23 @@
 # Swan Cloud Server
 
-Spring boot api to handle photo/video files upload and organisation. The server will save uploaded media files in the file system that is running on and in the specified base path (see env variables below). It organises the media files based on the date the photo/video was taken.  
+Spring boot api to handle photo/video files upload and organisation. The server will save uploaded media files in the
+file system that is running on and in the specified base path (see env variables below). It organises the media files
+based on the date the photo/video was taken.  
 Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html) to get details on the API.
+
+## Spring Profiles
+
+1. production = profile to be switch the app to production mode. Current functionality on production mode:
+   * API keys enabled: the server will only respond to known clients. set this up with the security.api.keys property
+   * HTTPS only
 
 ## Env variables
 
-1. files.base-path = the base path the system will use to start organising the uploaded files. Use when you need to mount a volume when using this with Docker. Default setting is the base path the application was initialized on.
+1. files.base-path = the base path the system will use to start organising the uploaded files. Use when you need to
+   mount a volume when using this with Docker. Default setting is the base path the application was initialized on.
+
+2. security.api.keys = api keys that the server will trust and server content to when 'production' profile is enabled.
+   syntax example: `security.api.keys = {'key 1', 'key 2'}`
 
 ## Useful commands
 
