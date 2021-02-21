@@ -1,4 +1,4 @@
-# Swan Cloud Server
+# Swan Cloud Server ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/chiknas/swancloud)
 
 Spring boot api to handle photo/video files upload and organisation. The server will save uploaded media files in the
 file system that is running on and in the specified base path (see env variables below). It organises the media files
