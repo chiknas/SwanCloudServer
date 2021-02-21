@@ -22,7 +22,7 @@ class CursorUtilsTest {
     void setUp() {
         cursor = new FileMetadataCursor();
         cursor.setId(5);
-        cursor.setCreatedDate(LocalDate.now());
+        cursor.setCreatedDate(LocalDate.of(2021, 2, 15));
     }
 
     @Test
