@@ -1,0 +1,3 @@
+# Ignore keystore files in this directory. these should be injected in production mode.
+# Use only for dev purposes
+*.p12
