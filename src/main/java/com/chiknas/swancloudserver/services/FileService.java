@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.chiknas.swancloudserver.services.ThumbnailService.toByteArray;
+
 @Slf4j
 @Service
 public class FileService {
@@ -42,11 +45,13 @@ public class FileService {
 
     private final FileMetadataRepository fileMetadataRepository;
     private final FileMetadataConverter fileMetadataConverter;
+    private final ThumbnailService thumbnailService;
 
     @Autowired
-    public FileService(FileMetadataRepository fileMetadataRepository, FileMetadataConverter fileMetadataConverter) {
+    public FileService(FileMetadataRepository fileMetadataRepository, FileMetadataConverter fileMetadataConverter, ThumbnailService thumbnailService) {
         this.fileMetadataRepository = fileMetadataRepository;
         this.fileMetadataConverter = fileMetadataConverter;
+        this.thumbnailService = thumbnailService;
     }
 
     /**
@@ -176,7 +181,7 @@ public class FileService {
     /**
      * Moves the specified file to the new path. Make sure the path exists before calling this method.
      * The system will try to figure out the file creation date from the file metadata. if this is already known,
-     * pass the createdDate
+     * pass the createdDate. It will also try to update the thumbnail if possible.
      */
     public void moveFile(File file, Path path, LocalDate createdDate) {
         try {
@@ -190,12 +195,20 @@ public class FileService {
                         if (createdDate != null) {
                             fileMetadata.setCreatedDate(createdDate);
                         }
+                        if (fileMetadata.getThumbnail() == null) {
+                            final Optional<BufferedImage> fileThumbnail = thumbnailService.getFileThumbnail(Path.of(fileMetadata.getPath()).toFile());
+                            fileThumbnail.ifPresent(thumbnail -> fileMetadata.setThumbnail(toByteArray(thumbnail)));
+                        }
                         fileMetadataRepository.save(fileMetadata);
                     },
                     () -> {
                         FileMetadataEntity fileMetadata = Objects.requireNonNull(fileMetadataConverter.convert(moveLocation));
                         if (createdDate != null) {
                             fileMetadata.setCreatedDate(createdDate);
+                        }
+                        if (fileMetadata.getThumbnail() == null) {
+                            final Optional<BufferedImage> fileThumbnail = thumbnailService.getFileThumbnail(Path.of(fileMetadata.getPath()).toFile());
+                            fileThumbnail.ifPresent(thumbnail -> fileMetadata.setThumbnail(toByteArray(thumbnail)));
                         }
                         fileMetadataRepository.save(fileMetadata);
                     }
