@@ -3,19 +3,12 @@ package com.chiknas.swancloudserver.converters;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.services.FileService;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 
 @Slf4j
@@ -31,31 +24,10 @@ public class FileMetadataConverter implements Converter<File, FileMetadataEntity
         FileService.getCreationDate(file).ifPresentOrElse(fileMetadataEntity::setCreatedDate,
                 () -> fileMetadataEntity.setCreatedDate(LocalDate.EPOCH));
 
-        BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
-        try {
-            String mimeType = Files.probeContentType(Path.of(file.getAbsolutePath()));
-            if (mimeType.contains("video")) {
-                FFmpegFrameGrabber g = new FFmpegFrameGrabber(file.getAbsolutePath());
-                g.setFormat("mp4");
-                g.start();
-                thumbnail = new Java2DFrameConverter().convert(g.grabImage());
-                g.close();
-            } else if (mimeType.contains("image")) {
-                thumbnail.createGraphics().drawImage(ImageIO.read(file).getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0,
-                        0, null);
-            }
-
-            fileMetadataEntity.setThumbnail(toByteArray(thumbnail));
-        } catch (Exception e) {
-            log.error("Could not create thumbnail for file.", e);
-        }
+        // creating the thumbnail is an expensive operation to do here.
+        // this should be picked up after this is saved to the db.
+        fileMetadataEntity.setThumbnail(null);
         return fileMetadataEntity;
-    }
-
-    public static byte[] toByteArray(BufferedImage bi) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(bi, "jpg", baos);
-        return baos.toByteArray();
     }
 
     //TODO: https://stackoverflow.com/questions/59280534/image-is-90-degree-left-rotated-after-encoding-to-base64

@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -33,12 +35,14 @@ public class IndexingService {
     private final FileOrganiserService fileOrganiserService;
     private final FileMetadataConverter fileMetadataConverter;
     private final FileMetadataRepository fileMetadataRepository;
+    private final ThumbnailService thumbnailService;
 
     @Autowired
-    public IndexingService(FileOrganiserService fileOrganiserService, FileMetadataConverter fileMetadataConverter, FileMetadataRepository fileMetadataRepository) {
+    public IndexingService(FileOrganiserService fileOrganiserService, FileMetadataConverter fileMetadataConverter, FileMetadataRepository fileMetadataRepository, ThumbnailService thumbnailService) {
         this.fileOrganiserService = fileOrganiserService;
         this.fileMetadataConverter = fileMetadataConverter;
         this.fileMetadataRepository = fileMetadataRepository;
+        this.thumbnailService = thumbnailService;
     }
 
     @PostConstruct
@@ -54,7 +58,7 @@ public class IndexingService {
             log.info("Starting indexing of files.");
             long startTime = System.currentTimeMillis();
 
-            paths.parallel().forEach(path -> {
+            final List<FileMetadataEntity> fileMetadataList = paths.parallel().map(path -> {
                 File file = new File(path.toString());
                 // ignore directories
                 if (file.isFile()) {
@@ -69,12 +73,17 @@ public class IndexingService {
                                     .ifPresent(fileMetadata::setCreatedDate);
 
                         }
-                        fileMetadataRepository.save(fileMetadata);
+                        return fileMetadata;
                     }
-
                 }
-            });
+                return null;
+            }).filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
+
+            fileMetadataRepository.saveAll(fileMetadataList);
+
             log.info("Indexing completed in: {}sec", (System.currentTimeMillis() - startTime) / 1000);
+
+            new Thread(thumbnailService).start();
         } catch (IOException e) {
             log.error("Failed to index base path.", e);
         }
