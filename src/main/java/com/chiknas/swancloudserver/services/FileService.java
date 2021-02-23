@@ -1,6 +1,6 @@
 package com.chiknas.swancloudserver.services;
 
-import com.chiknas.swancloudserver.converters.FileMetadataConverter;
+import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
 import com.chiknas.swancloudserver.repositories.cursorpagination.CursorPage;
@@ -14,6 +14,7 @@ import com.drew.metadata.mp4.Mp4Directory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.chiknas.swancloudserver.services.ThumbnailService.toByteArray;
 
@@ -44,13 +46,13 @@ public class FileService {
     private final String filesBasePath = System.getProperty("user.dir");
 
     private final FileMetadataRepository fileMetadataRepository;
-    private final FileMetadataConverter fileMetadataConverter;
+    private final ConversionService conversionService;
     private final ThumbnailService thumbnailService;
 
     @Autowired
-    public FileService(FileMetadataRepository fileMetadataRepository, FileMetadataConverter fileMetadataConverter, ThumbnailService thumbnailService) {
+    public FileService(FileMetadataRepository fileMetadataRepository, ConversionService conversionService, ThumbnailService thumbnailService) {
         this.fileMetadataRepository = fileMetadataRepository;
-        this.fileMetadataConverter = fileMetadataConverter;
+        this.conversionService = conversionService;
         this.thumbnailService = thumbnailService;
     }
 
@@ -79,7 +81,7 @@ public class FileService {
     /**
      * Returns the metadata for all the files that are currently in the system.
      */
-    public CursorPage<FileMetadataEntity> findAllFilesMetadata(FileMetadataCursor fileMetadataCursor, int limit, boolean uncategorized) {
+    public CursorPage<FileMetadataDTO> findAllFilesMetadata(FileMetadataCursor fileMetadataCursor, int limit, boolean uncategorized) {
         List<FileMetadataEntity> allAfterCursor;
 
         if (fileMetadataCursor != null) {
@@ -112,10 +114,15 @@ public class FileService {
             }
 
             @Override
-            public List<FileMetadataEntity> getNodes() {
-                return allAfterCursor.size() > limit ? allAfterCursor.subList(0, limit) : allAfterCursor;
+            public List<FileMetadataDTO> getNodes() {
+                final List<FileMetadataEntity> fileMetadataEntities = allAfterCursor.size() > limit ? allAfterCursor.subList(0, limit) : allAfterCursor;
+                return fileMetadataEntities.stream().map(metadata -> conversionService.convert(metadata, FileMetadataDTO.class)).collect(Collectors.toList());
             }
         };
+    }
+
+    public Optional<FileMetadataEntity> findFileMetadataById(Integer id) {
+        return fileMetadataRepository.findById(id);
     }
 
     /**
@@ -202,7 +209,7 @@ public class FileService {
                         fileMetadataRepository.save(fileMetadata);
                     },
                     () -> {
-                        FileMetadataEntity fileMetadata = Objects.requireNonNull(fileMetadataConverter.convert(moveLocation));
+                        FileMetadataEntity fileMetadata = Objects.requireNonNull(conversionService.convert(moveLocation, FileMetadataEntity.class));
                         if (createdDate != null) {
                             fileMetadata.setCreatedDate(createdDate);
                         }

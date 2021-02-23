@@ -1,13 +1,14 @@
 package com.chiknas.swancloudserver.controllers;
 
+import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.dto.SetFileDateDTO;
-import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.repositories.cursorpagination.CursorPage;
 import com.chiknas.swancloudserver.repositories.cursorpagination.CursorUtils;
 import com.chiknas.swancloudserver.repositories.cursorpagination.cursors.FileMetadataCursor;
 import com.chiknas.swancloudserver.services.FileOrganiserService;
 import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,17 +38,26 @@ public class FileController {
     }
 
     @GetMapping("/files")
-    public CursorPage<FileMetadataEntity> getFiles(@RequestParam(required = false)
-                                                           String cursor,
-                                                   @RequestParam int limit) {
+    public CursorPage<FileMetadataDTO> getFiles(@RequestParam(required = false)
+                                                        String cursor,
+                                                @RequestParam int limit) {
         return fileService.findAllFilesMetadata((FileMetadataCursor) CursorUtils.base64ToCursor(cursor), limit, false);
     }
 
     @GetMapping("/files/uncategorized")
-    public CursorPage<FileMetadataEntity> getUncategorizedFiles(@RequestParam(required = false)
-                                                                        String cursor,
-                                                                @RequestParam int limit) {
+    public CursorPage<FileMetadataDTO> getUncategorizedFiles(@RequestParam(required = false)
+                                                                     String cursor,
+                                                             @RequestParam int limit) {
         return fileService.findAllFilesMetadata((FileMetadataCursor) CursorUtils.base64ToCursor(cursor), limit, true);
     }
 
+    @GetMapping("/files/thumbnail/{id}")
+    public ResponseEntity<byte[]> getFileThumbnail(@PathVariable Integer id) {
+        HttpHeaders headers = new HttpHeaders();
+        return fileService.findFileMetadataById(id).map(metadata -> {
+            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            return new ResponseEntity<>(metadata.getThumbnail(), headers, HttpStatus.OK);
+        }).orElse(new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND));
+    }
 }
