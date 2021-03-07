@@ -17,8 +17,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * Service that holds operations related to thumbnails. We can also run this service in a thread to create all the thumbnails on
+ * files that do not have a thumbnail in the background. Only one can run at the background, if you try to run it more than once it
+ * will not do anything.
+ *
  * @author nkukn
  * @since 2/21/2021
  */
@@ -26,6 +31,8 @@ import java.util.Optional;
 @Service
 public class ThumbnailService implements Runnable {
 
+    // if this service is running in a separate thread?
+    private static final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final FileMetadataRepository fileMetadataRepository;
 
     @Autowired
@@ -35,19 +42,33 @@ public class ThumbnailService implements Runnable {
 
     @Override
     public void run() {
-        log.info("Starting updating of files thumbnails!");
-        long startTime = System.currentTimeMillis();
 
-        fileMetadataRepository.findAllByThumbnailNull(Sort.by(Sort.Direction.DESC, "createdDate")).forEach(fileMetadataEntity -> {
-            final File file = Path.of(fileMetadataEntity.getPath()).toFile();
-            final Optional<BufferedImage> fileThumbnail = getFileThumbnail(file);
-            fileThumbnail.ifPresent(thumbnail -> {
-                fileMetadataEntity.setThumbnail(toByteArray(thumbnail));
-                fileMetadataRepository.save(fileMetadataEntity);
+        // can not run more than once at the same time.
+        if (isRunning.getAcquire()) return;
+
+        isRunning.setRelease(true);
+
+        try {
+            log.info("Starting updating of files thumbnails!");
+
+            long startTime = System.currentTimeMillis();
+
+            fileMetadataRepository.findAllByThumbnailNull(Sort.by(Sort.Direction.DESC, "createdDate")).forEach(fileMetadataEntity -> {
+                final File file = Path.of(fileMetadataEntity.getPath()).toFile();
+                final Optional<BufferedImage> fileThumbnail = getFileThumbnail(file);
+                fileThumbnail.ifPresent(thumbnail -> {
+                    fileMetadataEntity.setThumbnail(toByteArray(thumbnail));
+                    fileMetadataRepository.save(fileMetadataEntity);
+                });
             });
-        });
 
-        log.info("Thumbnail update completed in: {}sec.", (System.currentTimeMillis() - startTime) / 1000);
+            log.info("Thumbnail update completed in: {}sec.", (System.currentTimeMillis() - startTime) / 1000);
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            isRunning.setRelease(false);
+        }
     }
 
     /**
@@ -111,5 +132,9 @@ public class ThumbnailService implements Runnable {
             log.error(e.getMessage(), e);
         }
         return null;
+    }
+
+    public static boolean isRunning() {
+        return isRunning.getAcquire();
     }
 }

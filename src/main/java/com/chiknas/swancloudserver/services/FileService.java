@@ -151,7 +151,7 @@ public class FileService {
                 return Optional.of(new java.sql.Date(result.getTime()).toLocalDate());
             }
         } catch (ImageProcessingException | IOException e) {
-            log.error(e.getMessage(), e);
+            log.error(e.getMessage().concat(file.getName()), e);
         }
 
         return Optional.empty();
