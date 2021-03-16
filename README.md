@@ -5,6 +5,13 @@ file system that is running on and in the specified base path (see env variables
 based on the date the photo/video was taken.  
 Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html) to get details on the API.
 
+## QuickStart
+
+1. Build the project: `./gradlew build`
+2. Update `application.properties` with your settings
+3. Startup the server: `./gradlew bootRun`
+4. Application api is up at: `http://locahost:8080/api`
+
 ## Spring Profiles
 
 1. production = profile to be switch the app to production mode. Current functionality on production mode:
