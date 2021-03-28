@@ -10,7 +10,6 @@ import com.chiknas.swancloudserver.services.FileOrganiserService;
 import com.chiknas.swancloudserver.services.FileService;
 import com.chiknas.swancloudserver.services.ThumbnailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -60,14 +59,5 @@ public class FileController {
                                                              @RequestParam int limit) {
         return fileService.findAllFilesMetadata((FileMetadataCursor) CursorUtils.base64ToCursor(cursor), limit, true);
     }
-
-    @GetMapping("/files/thumbnail/{id}")
-    public ResponseEntity<byte[]> getFileThumbnail(@PathVariable Integer id) {
-        HttpHeaders headers = new HttpHeaders();
-        return fileService.findFileMetadataById(id).map(metadata -> {
-            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            headers.setContentType(MediaType.IMAGE_JPEG);
-            return new ResponseEntity<>(metadata.getThumbnail(), headers, HttpStatus.OK);
-        }).orElse(new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND));
-    }
+    
 }

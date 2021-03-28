@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,8 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.chiknas.swancloudserver.services.ThumbnailService.toByteArray;
 
 @Slf4j
 @Service
@@ -202,10 +199,9 @@ public class FileService {
                         if (createdDate != null) {
                             fileMetadata.setCreatedDate(createdDate);
                         }
-                        if (fileMetadata.getThumbnail() == null) {
-                            final Optional<BufferedImage> fileThumbnail = thumbnailService.getFileThumbnail(Path.of(fileMetadata.getPath()).toFile());
-                            fileThumbnail.ifPresent(thumbnail -> fileMetadata.setThumbnail(toByteArray(thumbnail)));
-                        }
+
+                        thumbnailService.addThumbnail(fileMetadata);
+
                         fileMetadataRepository.save(fileMetadata);
                     },
                     () -> {
@@ -213,10 +209,9 @@ public class FileService {
                         if (createdDate != null) {
                             fileMetadata.setCreatedDate(createdDate);
                         }
-                        if (fileMetadata.getThumbnail() == null) {
-                            final Optional<BufferedImage> fileThumbnail = thumbnailService.getFileThumbnail(Path.of(fileMetadata.getPath()).toFile());
-                            fileThumbnail.ifPresent(thumbnail -> fileMetadata.setThumbnail(toByteArray(thumbnail)));
-                        }
+
+                        thumbnailService.addThumbnail(fileMetadata);
+                        
                         fileMetadataRepository.save(fileMetadata);
                     }
             );

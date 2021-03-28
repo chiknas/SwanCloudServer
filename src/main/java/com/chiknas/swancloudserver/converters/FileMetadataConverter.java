@@ -24,9 +24,6 @@ public class FileMetadataConverter implements Converter<File, FileMetadataEntity
         FileService.getCreationDate(file).ifPresentOrElse(fileMetadataEntity::setCreatedDate,
                 () -> fileMetadataEntity.setCreatedDate(LocalDate.EPOCH));
 
-        // creating the thumbnail is an expensive operation to do here.
-        // this should be picked up after this is saved to the db.
-        fileMetadataEntity.setThumbnail(null);
         return fileMetadataEntity;
     }
 

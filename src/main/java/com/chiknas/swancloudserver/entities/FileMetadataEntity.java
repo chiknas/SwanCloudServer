@@ -25,8 +25,4 @@ public class FileMetadataEntity {
     @Column(name = "created_date")
     private LocalDate createdDate;
 
-    @Lob
-    @Column(name = "thumbnail")
-    private byte[] thumbnail;
-
 }

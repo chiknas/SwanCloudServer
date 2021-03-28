@@ -2,7 +2,6 @@ package com.chiknas.swancloudserver.repositories;
 
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,8 +13,6 @@ import java.util.Optional;
 @Repository
 public interface FileMetadataRepository extends JpaRepository<FileMetadataEntity, Integer> {
     Optional<FileMetadataEntity> findByFileName(String fileName);
-
-    List<FileMetadataEntity> findAllByThumbnailNull(Sort sort);
 
     @Query("SELECT fm FROM FileMetadataEntity fm WHERE fm.createdDate <= ?2 AND (fm.id <= ?1 OR fm.createdDate <= ?2) " +
             "ORDER BY fm.createdDate DESC, fm.id DESC")

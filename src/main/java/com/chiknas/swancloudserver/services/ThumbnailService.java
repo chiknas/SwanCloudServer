@@ -1,6 +1,9 @@
 package com.chiknas.swancloudserver.services;
 
+import com.chiknas.swancloudserver.entities.FileMetadataEntity;
+import com.chiknas.swancloudserver.entities.ThumbnailEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
+import com.chiknas.swancloudserver.repositories.ThumbnailRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -16,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,10 +39,12 @@ public class ThumbnailService implements Runnable {
     // if this service is running in a separate thread?
     private static final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final FileMetadataRepository fileMetadataRepository;
+    private final ThumbnailRepository thumbnailRepository;
 
     @Autowired
-    public ThumbnailService(FileMetadataRepository fileMetadataRepository) {
+    public ThumbnailService(FileMetadataRepository fileMetadataRepository, ThumbnailRepository thumbnailRepository) {
         this.fileMetadataRepository = fileMetadataRepository;
+        this.thumbnailRepository = thumbnailRepository;
     }
 
     @Override
@@ -53,16 +60,12 @@ public class ThumbnailService implements Runnable {
 
             long startTime = System.currentTimeMillis();
 
-            fileMetadataRepository.findAllByThumbnailNull(Sort.by(Sort.Direction.DESC, "createdDate")).forEach(fileMetadataEntity -> {
-                final File file = Path.of(fileMetadataEntity.getPath()).toFile();
-                final Optional<BufferedImage> fileThumbnail = getFileThumbnail(file);
-                fileThumbnail.ifPresent(thumbnail -> {
-                    fileMetadataEntity.setThumbnail(toByteArray(thumbnail));
-                    fileMetadataRepository.save(fileMetadataEntity);
-                });
-            });
+            List<ThumbnailEntity> newThumbnails = new ArrayList<>();
 
-            log.info("Thumbnail update completed in: {}sec.", (System.currentTimeMillis() - startTime) / 1000);
+            fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
+                    .forEach(fileMetadataEntity -> addThumbnail(fileMetadataEntity).ifPresent(newThumbnails::add));
+
+            log.info("Thumbnail update completed in: {}sec for {} new thumbnails.", (System.currentTimeMillis() - startTime) / 1000, newThumbnails.size());
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -72,9 +75,36 @@ public class ThumbnailService implements Runnable {
     }
 
     /**
+     * Returns a thumbnail entity for the given file name if found. empty optional otherwise.
+     */
+    public Optional<ThumbnailEntity> getThumbnailForFile(String fileName) {
+        return thumbnailRepository.findByFileName(fileName);
+    }
+
+    /**
+     * Will generate and persist a new {@link ThumbnailEntity} for the given file metadata. If a thumbnail
+     * with the given name already exists it doesn't do anything.
+     */
+    public Optional<ThumbnailEntity> addThumbnail(FileMetadataEntity fileMetadataEntity) {
+        if (!thumbnailRepository.existsByFileName(fileMetadataEntity.getFileName())) {
+            final File file = Path.of(fileMetadataEntity.getPath()).toFile();
+            final Optional<BufferedImage> fileThumbnail = generateFileThumbnail(file);
+            final Optional<ThumbnailEntity> thumbnailEntity = fileThumbnail.map(thumbnail -> {
+                final ThumbnailEntity entity = new ThumbnailEntity();
+                entity.setThumbnail(toByteArray(thumbnail));
+                entity.setFileName(fileMetadataEntity.getFileName());
+                return entity;
+            });
+            thumbnailEntity.ifPresent(thumbnailRepository::save);
+            return thumbnailEntity;
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Uses the file type and generates a thumbnail for a video/image. Empty if the thumbnail failed or the file is not media.
      */
-    public Optional<BufferedImage> getFileThumbnail(File file) {
+    private Optional<BufferedImage> generateFileThumbnail(File file) {
 
         try {
             BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
