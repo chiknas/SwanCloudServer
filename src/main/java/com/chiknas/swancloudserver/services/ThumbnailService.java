@@ -109,11 +109,17 @@ public class ThumbnailService implements Runnable {
         try {
             BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
             String mimeType = Files.probeContentType(Path.of(file.getAbsolutePath()));
+
+            if (mimeType == null) {
+                return Optional.of(thumbnail);
+            }
+
             if (mimeType.contains("video")) {
                 thumbnail = getVideoThumbnail(file);
             } else if (mimeType.contains("image")) {
                 thumbnail = getImageThumbnail(file);
             }
+
             return Optional.ofNullable(thumbnail);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
