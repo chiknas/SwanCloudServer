@@ -27,6 +27,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         httpSecurity.
                 antMatcher("/**").
                 csrf().disable().
+                cors().and().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
                 and().addFilter(new APIKeyAuthFilter(knownApiKeys)).authorizeRequests().anyRequest().authenticated();
     }

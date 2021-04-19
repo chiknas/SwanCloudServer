@@ -1,6 +1,7 @@
 package com.chiknas.swancloudserver.security;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -19,6 +20,8 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/*").allowedOrigins("*");
+        registry.addMapping("/api/*")
+                .allowedOrigins("*")
+                .allowedMethods(HttpMethod.GET.toString(), HttpMethod.POST.toString());
     }
 }
