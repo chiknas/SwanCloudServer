@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -91,7 +90,7 @@ public class ThumbnailService implements Runnable {
             final Optional<BufferedImage> fileThumbnail = generateFileThumbnail(file);
             final Optional<ThumbnailEntity> thumbnailEntity = fileThumbnail.map(thumbnail -> {
                 final ThumbnailEntity entity = new ThumbnailEntity();
-                entity.setThumbnail(toByteArray(thumbnail));
+                entity.setThumbnail(ImageHelper.toByteArray(thumbnail));
                 entity.setFileName(fileMetadataEntity.getFileName());
                 return entity;
             });
@@ -154,17 +153,6 @@ public class ThumbnailService implements Runnable {
                     0, null);
             return thumbnail;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return null;
-    }
-
-    public static byte[] toByteArray(BufferedImage bi) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bi, "jpg", baos);
-            return baos.toByteArray();
-        } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
         return null;

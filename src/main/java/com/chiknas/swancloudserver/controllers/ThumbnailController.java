@@ -39,4 +39,10 @@ public class ThumbnailController {
                 .map(ThumbnailEntity::getThumbnail)
                 .orElse(null);
     }
+
+    @GetMapping("/files/preview/{id}")
+    @ResponseBody
+    public byte[] getFilePreview(@PathVariable Integer id) {
+        return fileService.getImageById(id).orElse(null);
+    }
 }

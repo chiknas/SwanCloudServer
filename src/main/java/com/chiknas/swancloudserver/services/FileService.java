@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -123,6 +125,26 @@ public class FileService {
     }
 
     /**
+     * Returns the real image in byte form for the specified image id in the db.
+     *
+     * @param id - the {@link FileMetadataEntity} id
+     * @return - byte array of the real image
+     */
+    public Optional<byte[]> getImageById(Integer id) {
+        return findFileMetadataById(id).map(fileMetadata -> {
+            final String path = fileMetadata.getPath();
+            File imgPath = new File(path);
+            try {
+                BufferedImage bufferedImage = ImageIO.read(imgPath);
+                return ImageHelper.toByteArray(bufferedImage);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
      * Tries to read media file metadata (exif) to return the date the media was created.
      *
      * @param file - the file in the system you are interested in.
@@ -211,7 +233,7 @@ public class FileService {
                         }
 
                         thumbnailService.addThumbnail(fileMetadata);
-                        
+
                         fileMetadataRepository.save(fileMetadata);
                     }
             );
