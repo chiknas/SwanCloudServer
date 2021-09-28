@@ -53,25 +53,22 @@ jobs:
           docker push $IMAGE_NAME:$TAG
 
   build_arm_rpi:
-    docker:
-      - image: circleci/buildpack-deps:buster
+    machine:
+      image: ubuntu-1604:202010-01
 
     working_directory: ~/repo
 
     steps:
       - checkout
 
-      - setup_remote_docker:
-          version: 19.03.13
-
-      # Build and publish docker image using qemu to run on 32bit Raspberry pi
+      # Build and publish docker image using qemu to run on Raspberry pi
       - run: |
           IMAGE_NAME=$DOCKER_USER/swancloudserver
           TAG=circleci-arm-test
           curl -L https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-arm.tar.gz | tar zxvf - -C . && mv qemu-3.0.0+resin-arm/qemu-arm-static .
           docker run --rm --privileged multiarch/qemu-user-static:register --reset
           docker build -t $IMAGE_NAME:$TAG -f Dockerfile.armhf .
-          echo $DOCKER_PASS | docker login -u $DOCKER_USER -p $DOCKER_PASS
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
 
 
