@@ -8,11 +8,6 @@ jobs:
     machine:
       image: ubuntu-2004:202010-01
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
     working_directory: ~/repo
 
     environment:
@@ -57,17 +52,27 @@ jobs:
           echo $DOCKER_PASS | docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
 
-#  build_arm:
-#    machine:
-#      image: ubuntu-2004:202101-01
-#    resource_class: arm.medium
-#
-#    working_directory: ~/repo
-#
-#      environment:
-#        _JAVA_OPTIONS: "-Xmx3g"
-#
-#    steps:
+  build_arm_rpi:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: 19.03.13
+
+      # Build and publish docker image using qemu to run on 32bit Raspberry pi
+      - run: |
+          IMAGE_NAME=$DOCKER_USER/swancloudserver
+          TAG=circleci-arm-test
+          curl -L https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-arm.tar.gz | tar zxvf - -C . && mv qemu-3.0.0+resin-arm/qemu-arm-static .
+          docker run --rm --privileged multiarch/qemu-user-static:register --reset
+          docker build -t $IMAGE_NAME:$TAG -f Dockerfile.armhf .
+          echo $DOCKER_PASS | docker login -u $DOCKER_USER -p $DOCKER_PASS
+          docker push $IMAGE_NAME:$TAG
 
 
 
@@ -75,5 +80,7 @@ workflows:
   version: 2
   workflow:
     jobs:
-      - build:
+#      - build:
+#          context: DOCKER_HUB
+      - build_arm_rpi:
           context: DOCKER_HUB
