@@ -5,12 +5,8 @@
 version: 2
 jobs:
   build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/openjdk:11.0.3-jdk-stretch
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASS
+    machine:
+      image: ubuntu-2004:202010-01
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -32,12 +28,7 @@ jobs:
       - restore_cache:
           key: v1-gradle-cache-{{ checksum "build.gradle" }}
 
-      # Build the project and save the jar in the build workspace to be used later if needed.
       - run: ./gradlew build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - build/libs/SwanCloudServer-0.0.1-SNAPSHOT.jar
 
       # Store the Gradle wrapper and dependencies in order to speed things up for next time.
       - save_cache:
@@ -58,18 +49,13 @@ jobs:
           path: build/test-results/test
           when: always
 
-      # Build and publish docker images
-      - setup_remote_docker:
-          version: 19.03.13
-
+      # Build and publish docker image
       - run: |
-          scp -r build/libs/SwanCloudServer-0.0.1-SNAPSHOT.jar remote-docker:build/libs/SwanCloudServer-0.0.1-SNAPSHOT.jar
-
-      - run: |
+          IMAGE_NAME=chiknas/swancloudserver
           TAG=circleci-test
-          docker build -t swancloudserver:$TAG .
+          docker build -t $IMAGE_NAME:$TAG .
           echo $DOCKER_PASS | docker login -u $DOCKER_USER -p $DOCKER_PASS
-          docker push swancloudserver:$TAG
+          docker push $IMAGE_NAME:$TAG
 
 #  build_arm:
 #    machine:
