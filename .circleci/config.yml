@@ -84,7 +84,7 @@ workflows:
   workflow:
     jobs:
       - build:
-          context: DOCKER_HUB
+          context: DOCKER_HUB # context set on circleci to hold docker hub creds
           filters:
             branches:
               only: master
