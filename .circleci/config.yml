@@ -54,7 +54,7 @@ jobs:
 
   build_arm_rpi:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: circleci/buildpack-deps:buster
 
     working_directory: ~/repo
 
