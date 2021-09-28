@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.4.1'
+	id 'org.springframework.boot' version '2.5.4'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
 	id 'java'
 }
@@ -23,12 +23,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'com.h2database:h2:1.4.200'
-	implementation 'org.bytedeco:javacv-platform:1.5.4'
-	implementation 'com.drewnoakes:metadata-extractor:2.15.0'
-	implementation 'org.springdoc:springdoc-openapi-ui:1.5.3'
+	implementation 'org.bytedeco:javacv-platform:1.5.5'
+	implementation 'com.drewnoakes:metadata-extractor:2.16.0'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.5.10'
 
 	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok:1.18.20'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
