@@ -5,6 +5,8 @@
 version: 2
 jobs:
   build:
+    branches:
+      only: master
     machine:
       image: ubuntu-2004:202010-01
 
@@ -46,13 +48,15 @@ jobs:
 
       # Build and publish docker image
       - run: |
-          IMAGE_NAME=chiknas/swancloudserver
-          TAG=circleci-test
+          IMAGE_NAME=$DOCKER_USER/swancloud
+          TAG=latest
           docker build -t $IMAGE_NAME:$TAG .
           echo $DOCKER_PASS | docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
 
   build_arm_rpi:
+    branches:
+      only: master
     machine:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
@@ -95,19 +99,18 @@ jobs:
 
       # Build and publish docker image using qemu to run on Raspberry pi
       - run: |
-          IMAGE_NAME=$DOCKER_USER/swancloudserver
-          TAG=circleci-arm-test
+          IMAGE_NAME=$DOCKER_USER/swancloud
+          TAG=arm32v7
           docker build -t $IMAGE_NAME:$TAG -f Dockerfile.armhf .
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
-
 
 
 workflows:
   version: 2
   workflow:
     jobs:
-#      - build:
-#          context: DOCKER_HUB
+      - build:
+          context: DOCKER_HUB
       - build_arm_rpi:
           context: DOCKER_HUB
