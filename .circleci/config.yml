@@ -54,19 +54,49 @@ jobs:
 
   build_arm_rpi:
     machine:
-      image: ubuntu-1604:202010-01
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
 
     working_directory: ~/repo
 
+    environment:
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+
     steps:
       - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: v1-gradle-cache-{{ checksum "build.gradle" }}
+
+      - run: ./gradlew build
+
+      # Store the Gradle wrapper and dependencies in order to speed things up for next time.
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+          key: v1-gradle-cache-{{ checksum "build.gradle" }}
+
+      # store_test_results uploads the JUnit test metadata from the build/test-results/test directory
+      # so that it can show up in the CircleCI dashboard. We also upload the test metadata as artifacts via the store_artifacts
+      # in case there is a need to examine them.
+      - store_test_results:
+          path: build/test-results/test
+      - store_artifacts:
+          path: build/test-results/test
+          when: always
 
       # Build and publish docker image using qemu to run on Raspberry pi
       - run: |
           IMAGE_NAME=$DOCKER_USER/swancloudserver
           TAG=circleci-arm-test
-          curl -L https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-arm.tar.gz | tar zxvf - -C . && mv qemu-3.0.0+resin-arm/qemu-arm-static .
-          docker run --rm --privileged multiarch/qemu-user-static:register --reset
           docker build -t $IMAGE_NAME:$TAG -f Dockerfile.armhf .
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
