@@ -3,19 +3,8 @@
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
 version: 2
-jobs:
-  build:
-    branches:
-      only: master
-    machine:
-      image: ubuntu-2004:202010-01
-
-    working_directory: ~/repo
-
-    environment:
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-
+commands:
+  build_project:
     steps:
       - checkout
 
@@ -45,6 +34,19 @@ jobs:
       - store_artifacts:
           path: build/test-results/test
           when: always
+jobs:
+  build:
+    machine:
+      image: ubuntu-2004:202010-01
+
+    working_directory: ~/repo
+
+    environment:
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+
+    steps:
+      - build_project
 
       # Build and publish docker image
       - run: |
@@ -55,8 +57,6 @@ jobs:
           docker push $IMAGE_NAME:$TAG
 
   build_arm_rpi:
-    branches:
-      only: master
     machine:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
@@ -68,36 +68,9 @@ jobs:
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
 
     steps:
-      - checkout
+      - build_project
 
-      # Download and cache dependencies
-      - restore_cache:
-          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - restore_cache:
-          key: v1-gradle-cache-{{ checksum "build.gradle" }}
-
-      - run: ./gradlew build
-
-      # Store the Gradle wrapper and dependencies in order to speed things up for next time.
-      - save_cache:
-          paths:
-            - ~/.gradle/wrapper
-          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - save_cache:
-          paths:
-            - ~/.gradle/caches
-          key: v1-gradle-cache-{{ checksum "build.gradle" }}
-
-      # store_test_results uploads the JUnit test metadata from the build/test-results/test directory
-      # so that it can show up in the CircleCI dashboard. We also upload the test metadata as artifacts via the store_artifacts
-      # in case there is a need to examine them.
-      - store_test_results:
-          path: build/test-results/test
-      - store_artifacts:
-          path: build/test-results/test
-          when: always
-
-      # Build and publish docker image using qemu to run on Raspberry pi
+      # Build and publish docker image to run on Raspberry pi or any armv7hf machine
       - run: |
           IMAGE_NAME=$DOCKER_USER/swancloud
           TAG=arm32v7
@@ -112,5 +85,11 @@ workflows:
     jobs:
       - build:
           context: DOCKER_HUB
+          filters:
+            branches:
+              only: master
       - build_arm_rpi:
           context: DOCKER_HUB
+          filters:
+            branches:
+              only: master
