@@ -1,11 +1,4 @@
-FROM gradle:6.7.1-jdk11-openj9 AS build
-COPY qemu-arm-static /usr/bin
-COPY --chown=gradle:gradle . /home/gradle/src
-WORKDIR /home/gradle/src
-RUN gradle build --no-daemon
-
 FROM balenalib/armv7hf-debian-openjdk:11
-COPY qemu-arm-static /usr/bin
 RUN mkdir -p app/data
-COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
+COPY build/libs/*.jar /app/app.jar
 ENTRYPOINT ["java","-jar","/app/app.jar"]
