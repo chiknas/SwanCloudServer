@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -24,8 +23,10 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Service that holds operations related to thumbnails. We can also run this service in a thread to create all the thumbnails on
- * files that do not have a thumbnail in the background. Only one can run at the background, if you try to run it more than once it
+ * Service that holds operations related to thumbnails. We can also run this service in a thread to create all the
+ * thumbnails on
+ * files that do not have a thumbnail in the background. Only one can run at the background, if you try to run it
+ * more than once it
  * will not do anything.
  *
  * @author nkukn
@@ -46,6 +47,10 @@ public class ThumbnailService implements Runnable {
         this.thumbnailRepository = thumbnailRepository;
     }
 
+    public static boolean isRunning() {
+        return isRunning.getAcquire();
+    }
+
     @Override
     public void run() {
 
@@ -64,7 +69,8 @@ public class ThumbnailService implements Runnable {
             fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
                     .forEach(fileMetadataEntity -> addThumbnail(fileMetadataEntity).ifPresent(newThumbnails::add));
 
-            log.info("Thumbnail update completed in: {}sec for {} new thumbnails.", (System.currentTimeMillis() - startTime) / 1000, newThumbnails.size());
+            log.info("Thumbnail update completed in: {}sec for {} new thumbnails.",
+                    (System.currentTimeMillis() - startTime) / 1000, newThumbnails.size());
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -101,7 +107,8 @@ public class ThumbnailService implements Runnable {
     }
 
     /**
-     * Uses the file type and generates a thumbnail for a video/image. Empty if the thumbnail failed or the file is not media.
+     * Uses the file type and generates a thumbnail for a video/image. Empty if the thumbnail failed or the file is
+     * not media.
      */
     private Optional<BufferedImage> generateFileThumbnail(File file) {
 
@@ -144,21 +151,14 @@ public class ThumbnailService implements Runnable {
     }
 
     /**
-     * Tries to create a thumbnail for the given image file. Will fail if file is not a image.
+     * Tries to create a thumbnail for the given file. If the file is not an image it will return an
+     * empty BufferedImage.
      */
     private BufferedImage getImageThumbnail(File file) {
-        try {
-            BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
-            thumbnail.createGraphics().drawImage(ImageIO.read(file).getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0,
-                    0, null);
-            return thumbnail;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return null;
-    }
-
-    public static boolean isRunning() {
-        return isRunning.getAcquire();
+        BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = Optional.ofNullable(FileService.readFileToImage(file)).orElseThrow();
+        thumbnail.createGraphics().drawImage(image.getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0,
+                0, null);
+        return thumbnail;
     }
 }

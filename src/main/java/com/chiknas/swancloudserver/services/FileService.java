@@ -9,6 +9,8 @@ import com.chiknas.swancloudserver.repositories.cursorpagination.cursors.FileMet
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.mp4.Mp4Directory;
 import lombok.extern.slf4j.Slf4j;
@@ -49,99 +51,11 @@ public class FileService {
     private final ThumbnailService thumbnailService;
 
     @Autowired
-    public FileService(FileMetadataRepository fileMetadataRepository, ConversionService conversionService, ThumbnailService thumbnailService) {
+    public FileService(FileMetadataRepository fileMetadataRepository, ConversionService conversionService,
+                       ThumbnailService thumbnailService) {
         this.fileMetadataRepository = fileMetadataRepository;
         this.conversionService = conversionService;
         this.thumbnailService = thumbnailService;
-    }
-
-    /**
-     * Saves a multipart file in the current system drive. The directory used is ${files.base-path}
-     */
-    public void storeFile(MultipartFile file) {
-        // Normalize file name
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-
-        try {
-            // Check if the file's name contains invalid characters
-            if (fileName.contains("..")) {
-                throw new RuntimeException("Sorry! Filename contains invalid path sequence " + fileName);
-            }
-
-            // Copy file to the target location (Replacing existing file with the same name)
-            Path targetLocation = Path.of(filesBasePath).resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-        } catch (IOException ex) {
-            throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
-        }
-    }
-
-    /**
-     * Returns the metadata for all the files that are currently in the system.
-     */
-    public CursorPage<FileMetadataDTO> findAllFilesMetadata(FileMetadataCursor fileMetadataCursor, int limit, boolean uncategorized) {
-        List<FileMetadataEntity> allAfterCursor;
-
-        if (fileMetadataCursor != null) {
-            allAfterCursor = uncategorized || fileMetadataCursor.getCreatedDate().equals(LocalDate.EPOCH)
-                    ? fileMetadataRepository
-                    .findAllUncategorizedAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId())
-                    : fileMetadataRepository
-                    .findAllAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId(), fileMetadataCursor.getCreatedDate());
-        } else {
-            FileMetadataEntity fileMetadataEntity = new FileMetadataEntity();
-            fileMetadataEntity.setCreatedDate(LocalDate.EPOCH);
-
-            allAfterCursor = uncategorized
-                    ? fileMetadataRepository
-                    .findAll(Example.of(fileMetadataEntity), PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC, "id"))).getContent()
-                    : fileMetadataRepository
-                    .findAll(PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC, "createdDate"))).getContent();
-        }
-
-        return new CursorPage<>() {
-
-            @Override
-            public String getNextCursor() {
-                return allAfterCursor.size() > limit
-                        ? CursorUtils.toBase64(FileMetadataCursor.builder()
-                        .id(allAfterCursor.get(allAfterCursor.size() - 1).getId())
-                        .createdDate(allAfterCursor.get(allAfterCursor.size() - 1).getCreatedDate())
-                        .build())
-                        : null;
-            }
-
-            @Override
-            public List<FileMetadataDTO> getNodes() {
-                final List<FileMetadataEntity> fileMetadataEntities = allAfterCursor.size() > limit ? allAfterCursor.subList(0, limit) : allAfterCursor;
-                return fileMetadataEntities.stream().map(metadata -> conversionService.convert(metadata, FileMetadataDTO.class)).collect(Collectors.toList());
-            }
-        };
-    }
-
-    public Optional<FileMetadataEntity> findFileMetadataById(Integer id) {
-        return fileMetadataRepository.findById(id);
-    }
-
-    /**
-     * Returns the real image in byte form for the specified image id in the db.
-     *
-     * @param id - the {@link FileMetadataEntity} id
-     * @return - byte array of the real image
-     */
-    public Optional<byte[]> getImageById(Integer id) {
-        return findFileMetadataById(id).map(fileMetadata -> {
-            final String path = fileMetadata.getPath();
-            File imgPath = new File(path);
-            try {
-                BufferedImage bufferedImage = ImageIO.read(imgPath);
-                return ImageHelper.toByteArray(bufferedImage);
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-            return null;
-        });
     }
 
     /**
@@ -177,7 +91,44 @@ public class FileService {
     }
 
     /**
-     * Tries to see if the file in question in still writing/reading by another source. Use this method with a grain of salt since we are not
+     * Returns an integer that specifies if an image should be rotated or not to be at the state it was taken.
+     * For example, if a portrait is saved as a landscape this method will return the rotation that needs to be made
+     * to account for that.
+     *
+     * @param file - the image file to check
+     * @return Empty optional = no rotation needed image is fine (or file is not an image or image doesn't have the
+     * proper metadata to find its orientation)
+     * 1 = rotate image 90 degrees clockwise
+     * -1 = rotate image 90 degrees anti=clockwise
+     */
+    public static Optional<Integer> getImageRotation(File file) {
+        try {
+            Metadata metadata = ImageMetadataReader.readMetadata(file);
+
+            ExifIFD0Directory exifIFD0 = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (exifIFD0 != null) {
+                int orientation = exifIFD0.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+                switch (orientation) {
+                    case 1: // [Exif IFD0] Orientation - Top, left side (Horizontal / normal)
+                    case 3: // [Exif IFD0] Orientation - Bottom, right side (Rotate 180)
+                        return Optional.empty();
+                    case 6: // [Exif IFD0] Orientation - Right side, top (Rotate 90 CW)
+                        return Optional.of(1);
+                    case 8: // [Exif IFD0] Orientation - Left side, bottom (Rotate 270 CW)
+                        return Optional.of(-1);
+                }
+            }
+
+        } catch (ImageProcessingException | IOException | MetadataException e) {
+            log.error(e.getMessage().concat(file.getName()), e);
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Tries to see if the file in question in still writing/reading by another source. Use this method with a grain
+     * of salt since we are not
      * always 100% sure if it will be correct.
      */
     public static boolean isFileInUse(File file) {
@@ -193,6 +144,113 @@ public class FileService {
             log.error(e.getMessage(), e);
         }
         return true;
+    }
+
+    /**
+     * Saves a multipart file in the current system drive. The directory used is ${files.base-path}
+     */
+    public void storeFile(MultipartFile file) {
+        // Normalize file name
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+
+        try {
+            // Check if the file's name contains invalid characters
+            if (fileName.contains("..")) {
+                throw new RuntimeException("Sorry! Filename contains invalid path sequence " + fileName);
+            }
+
+            // Copy file to the target location (Replacing existing file with the same name)
+            Path targetLocation = Path.of(filesBasePath).resolve(fileName);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
+        }
+    }
+
+    /**
+     * Returns the metadata for all the files that are currently in the system.
+     */
+    public CursorPage<FileMetadataDTO> findAllFilesMetadata(FileMetadataCursor fileMetadataCursor, int limit,
+                                                            boolean uncategorized) {
+        List<FileMetadataEntity> allAfterCursor;
+
+        if (fileMetadataCursor != null) {
+            allAfterCursor = uncategorized || fileMetadataCursor.getCreatedDate().equals(LocalDate.EPOCH)
+                    ? fileMetadataRepository
+                    .findAllUncategorizedAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId())
+                    : fileMetadataRepository
+                    .findAllAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId(),
+                            fileMetadataCursor.getCreatedDate());
+        } else {
+            FileMetadataEntity fileMetadataEntity = new FileMetadataEntity();
+            fileMetadataEntity.setCreatedDate(LocalDate.EPOCH);
+
+            allAfterCursor = uncategorized
+                    ? fileMetadataRepository
+                    .findAll(Example.of(fileMetadataEntity), PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC
+                            , "id"))).getContent()
+                    : fileMetadataRepository
+                    .findAll(PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC, "createdDate"))).getContent();
+        }
+
+        return new CursorPage<>() {
+
+            @Override
+            public String getNextCursor() {
+                return allAfterCursor.size() > limit
+                        ? CursorUtils.toBase64(FileMetadataCursor.builder()
+                        .id(allAfterCursor.get(allAfterCursor.size() - 1).getId())
+                        .createdDate(allAfterCursor.get(allAfterCursor.size() - 1).getCreatedDate())
+                        .build())
+                        : null;
+            }
+
+            @Override
+            public List<FileMetadataDTO> getNodes() {
+                final List<FileMetadataEntity> fileMetadataEntities = allAfterCursor.size() > limit ?
+                        allAfterCursor.subList(0, limit) : allAfterCursor;
+                return fileMetadataEntities.stream().map(metadata -> conversionService.convert(metadata,
+                        FileMetadataDTO.class)).collect(Collectors.toList());
+            }
+        };
+    }
+
+    public Optional<FileMetadataEntity> findFileMetadataById(Integer id) {
+        return fileMetadataRepository.findById(id);
+    }
+
+    /**
+     * Returns the real image in byte form for the specified image id in the db.
+     *
+     * @param id - the {@link FileMetadataEntity} id
+     * @return - byte array of the real image
+     */
+    public Optional<byte[]> getImageById(Integer id) {
+        return findFileMetadataById(id).map(fileMetadata -> {
+            final String path = fileMetadata.getPath();
+            File imgPath = new File(path);
+            BufferedImage bufferedImage = readFileToImage(imgPath);
+            return ImageHelper.toByteArray(bufferedImage);
+        });
+    }
+
+    /**
+     * Tries to read the file to a buffered image. Applies any format needed to create the correct BufferedImage.
+     * If it fails to create the buffered image returns null instead
+     */
+    public static BufferedImage readFileToImage(File file){
+        try {
+            BufferedImage bufferedImage = ImageIO.read(file);
+            // ImageIO can't read the image's orientation, so it turns portraits into landscapes. Read the image
+            // metadata and correct for that here.
+            return FileService.getImageRotation(file).map(orientation -> ImageHelper.rotate90(bufferedImage,
+                            orientation == 1)).orElse(bufferedImage);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     public void moveFile(File file, Path path) {
@@ -227,7 +285,9 @@ public class FileService {
                         fileMetadataRepository.save(fileMetadata);
                     },
                     () -> {
-                        FileMetadataEntity fileMetadata = Objects.requireNonNull(conversionService.convert(moveLocation, FileMetadataEntity.class));
+                        FileMetadataEntity fileMetadata =
+                                Objects.requireNonNull(conversionService.convert(moveLocation,
+                                        FileMetadataEntity.class));
                         if (createdDate != null) {
                             fileMetadata.setCreatedDate(createdDate);
                         }
