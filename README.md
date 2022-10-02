@@ -45,7 +45,7 @@ Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html
    `sudo docker run -p 8080:8080 swancloudserver`
 
 3. Upload image with curl
-   `curl -F 'file=@/image/path/here/image.png' -o - http://localhost:8080/api/upload`
+   `curl -F data=@/image/path/here/image.png -o - http://localhost:8080/api/upload`
 
 4. Generate PKCS12 key-store with jvm keytool
    `keytool -genkeypair -alias swancloud -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore swancloud.p12 -validity 3650`
