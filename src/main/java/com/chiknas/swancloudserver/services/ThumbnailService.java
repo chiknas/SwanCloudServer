@@ -100,8 +100,7 @@ public class ThumbnailService implements Runnable {
                 entity.setFileName(fileMetadataEntity.getFileName());
                 return entity;
             });
-            thumbnailEntity.ifPresent(thumbnailRepository::save);
-            return thumbnailEntity;
+            return thumbnailEntity.map(thumbnailRepository::save);
         }
         return Optional.empty();
     }
