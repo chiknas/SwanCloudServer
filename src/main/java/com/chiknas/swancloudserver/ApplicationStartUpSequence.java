@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Component

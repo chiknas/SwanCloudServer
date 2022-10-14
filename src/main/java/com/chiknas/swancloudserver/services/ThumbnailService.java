@@ -141,9 +141,9 @@ public class ThumbnailService {
      */
     private BufferedImage getImageThumbnail(File file) {
         BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
-        BufferedImage image = Optional.ofNullable(readFileToImage(file)).orElseThrow();
-        thumbnail.createGraphics().drawImage(image.getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0,
-                0, null);
+        Optional.ofNullable(readFileToImage(file)).ifPresent(image ->
+                thumbnail.createGraphics()
+                        .drawImage(image.getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0, 0, null));
         return thumbnail;
     }
 }
