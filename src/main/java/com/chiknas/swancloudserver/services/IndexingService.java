@@ -3,13 +3,14 @@ package com.chiknas.swancloudserver.services;
 import com.chiknas.swancloudserver.converters.FileMetadataConverter;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
+import com.chiknas.swancloudserver.services.helpers.FilesHelper;
 import com.chiknas.swancloudserver.utils.CustomFileVisitor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +18,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Service responsible to re-index the base path the system is currently running on.
@@ -26,32 +26,47 @@ import java.util.stream.Collectors;
  * @since 1/24/2021
  */
 @Slf4j
+@Transactional
 @Service
 public class IndexingService {
 
     @Value("${files.base-path}")
     private final String filesBasePath = System.getProperty("user.dir");
-
-    private final FileOrganiserService fileOrganiserService;
     private final FileMetadataConverter fileMetadataConverter;
     private final FileMetadataRepository fileMetadataRepository;
-    private final ThumbnailService thumbnailService;
 
     @Autowired
-    public IndexingService(FileOrganiserService fileOrganiserService, FileMetadataConverter fileMetadataConverter, FileMetadataRepository fileMetadataRepository, ThumbnailService thumbnailService) {
-        this.fileOrganiserService = fileOrganiserService;
+    public IndexingService(FileMetadataConverter fileMetadataConverter, FileMetadataRepository fileMetadataRepository) {
         this.fileMetadataConverter = fileMetadataConverter;
         this.fileMetadataRepository = fileMetadataRepository;
-        this.thumbnailService = thumbnailService;
     }
 
-    @PostConstruct
-    public void onStartUp() {
-        run();
+    /**
+     * Will index the file properties we need in the database. Location, filename, etc..
+     * From now on the file is available in the system.
+     */
+    public void index(File file) {
+        if (file.isFile()) {
+            // if the converter can not find the created date, figure out created date from the folder structure.
+            FileMetadataEntity fileMetadata = Objects.requireNonNull(fileMetadataConverter.convert(file));
+            if (fileMetadata.getCreatedDate().equals(LocalDate.EPOCH)) {
+                FilesHelper.getLocalDateFromPath(file)
+                        .ifPresentOrElse(
+                                fileMetadata::setCreatedDate,
+                                () -> fileMetadata.setCreatedDate(LocalDate.EPOCH)
+                        );
+            }
+            fileMetadataRepository.save(fileMetadata);
+        }
     }
 
 
-    public void run() {
+    /**
+     * Refreshes the indexes by dropping the metadata table and regenerating it by going through the whole filesystem
+     * and finding every file.
+     * Can be expensive use with care.
+     */
+    public void resetIndexes() {
         fileMetadataRepository.deleteAll();
 
         List<Path> paths = new ArrayList<>();
@@ -68,31 +83,14 @@ public class IndexingService {
         log.info("Starting indexing of files.");
         long startTime = System.currentTimeMillis();
 
-        final List<FileMetadataEntity> fileMetadataList = paths.stream().parallel().map(path -> {
+        paths.stream().parallel().forEach(path -> {
             File file = new File(path.toString());
             // ignore directories
-            if (file.isFile()) {
-                // files in the base path have not been organized yet. the organiser will handle the indexing.
-                if (file.getAbsolutePath().equals(filesBasePath)) {
-                    fileOrganiserService.addFileToOrganiser(file);
-                } else {
-                    // if the converter can not find the created date, figure out created date from the folder structure.
-                    FileMetadataEntity fileMetadata = Objects.requireNonNull(fileMetadataConverter.convert(file));
-                    if (fileMetadata.getCreatedDate().equals(LocalDate.EPOCH)) {
-                        FileOrganiserService.getLocalDateFromPath(file.getAbsolutePath())
-                                .ifPresent(fileMetadata::setCreatedDate);
+            if (!file.isFile()) return;
 
-                    }
-                    return fileMetadata;
-                }
-            }
-            return null;
-        }).filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
-
-        fileMetadataRepository.saveAll(fileMetadataList);
+            index(file);
+        });
 
         log.info("Indexing completed in: {}sec", (System.currentTimeMillis() - startTime) / 1000);
-
-        new Thread(thumbnailService).start();
     }
 }

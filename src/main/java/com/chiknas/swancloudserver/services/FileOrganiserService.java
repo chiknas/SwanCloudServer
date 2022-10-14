@@ -8,9 +8,14 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Optional;
+
+import static com.chiknas.swancloudserver.services.helpers.FilesHelper.getCreationDate;
+import static com.chiknas.swancloudserver.services.helpers.FilesHelper.isFileInUse;
 
 /**
  * Organises the file passed in by year and month of the file's creation date.
@@ -33,23 +38,6 @@ public class FileOrganiserService {
         this.fileService = fileService;
     }
 
-    public static Optional<LocalDate> getLocalDateFromPath(String path) {
-        Optional<Month> fileInMonth = Arrays.stream(Month.values())
-                .filter(month -> path.toLowerCase().contains(month.toString().toLowerCase()))
-                .findFirst();
-        if (fileInMonth.isPresent()) {
-            Month month = fileInMonth.get();
-            int indexOfMonth = path.toLowerCase().indexOf(month.toString().toLowerCase());
-            String yearString = path.substring(indexOfMonth - 5, indexOfMonth - 1);
-            try {
-                return Optional.of(LocalDate.of(Integer.parseInt(yearString), month, 1));
-            } catch (NumberFormatException e) {
-                log.error(String.format("Failed to get date from the current path: %s", path), e);
-            }
-        }
-        return Optional.empty();
-    }
-
     /**
      * Method to add files to the list to be organised by the system.
      */
@@ -69,7 +57,7 @@ public class FileOrganiserService {
         Iterator<File> iterator = files.iterator();
         while (iterator.hasNext()) {
             File file = iterator.next();
-            if (!FileService.isFileInUse(file)) {
+            if (!isFileInUse(file)) {
                 processFile(file);
                 iterator.remove();
             }
@@ -80,7 +68,7 @@ public class FileOrganiserService {
      * Organises the file to the correct folder by date. If date is not available it organises the file to generic uncategorized folder for manual categorization.
      */
     private void processFile(File file) {
-        Optional<LocalDate> creationDate = FileService.getCreationDate(file);
+        Optional<LocalDate> creationDate = getCreationDate(file);
         creationDate.ifPresentOrElse(date -> fileService.moveFile(file, createPathFromDate(date), date),
                 () -> {
                     File uncategorizedDir = new File(filesBasePath + "/uncategorized");

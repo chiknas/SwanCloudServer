@@ -20,7 +20,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.chiknas.swancloudserver.services.helpers.FilesHelper.readFileToImage;
 
 /**
  * Service that holds operations related to thumbnails. We can also run this service in a thread to create all the
@@ -34,10 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 @Service
-public class ThumbnailService implements Runnable {
+public class ThumbnailService {
 
-    // if this service is running in a separate thread?
-    private static final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final FileMetadataRepository fileMetadataRepository;
     private final ThumbnailRepository thumbnailRepository;
 
@@ -47,36 +46,23 @@ public class ThumbnailService implements Runnable {
         this.thumbnailRepository = thumbnailRepository;
     }
 
-    public static boolean isRunning() {
-        return isRunning.getAcquire();
-    }
+    /**
+     * Goes through the database and tries to generate thumbnails for all the files that do not already have one.
+     */
+    public void resetThumbnails() {
+        log.info("Thumbnail updates started!");
+        long startTime = System.currentTimeMillis();
 
-    @Override
-    public void run() {
+        List<ThumbnailEntity> newThumbnails = new ArrayList<>();
 
-        // can not run more than once at the same time.
-        if (isRunning.getAcquire()) return;
+        fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
+                .parallelStream()
+                .parallel()
+                .forEach(fileMetadataEntity -> addThumbnail(fileMetadataEntity)
+                        .ifPresent(newThumbnails::add));
 
-        isRunning.setRelease(true);
-
-        try {
-            log.info("Starting updating of files thumbnails!");
-
-            long startTime = System.currentTimeMillis();
-
-            List<ThumbnailEntity> newThumbnails = new ArrayList<>();
-
-            fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
-                    .forEach(fileMetadataEntity -> addThumbnail(fileMetadataEntity).ifPresent(newThumbnails::add));
-
-            log.info("Thumbnail update completed in: {}sec for {} new thumbnails.",
-                    (System.currentTimeMillis() - startTime) / 1000, newThumbnails.size());
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            isRunning.setRelease(false);
-        }
+        log.info("Thumbnail update completed in: {}sec for {} new thumbnails.",
+                (System.currentTimeMillis() - startTime) / 1000, newThumbnails.size());
     }
 
     /**
@@ -155,7 +141,7 @@ public class ThumbnailService implements Runnable {
      */
     private BufferedImage getImageThumbnail(File file) {
         BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
-        BufferedImage image = Optional.ofNullable(FileService.readFileToImage(file)).orElseThrow();
+        BufferedImage image = Optional.ofNullable(readFileToImage(file)).orElseThrow();
         thumbnail.createGraphics().drawImage(image.getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0,
                 0, null);
         return thumbnail;
