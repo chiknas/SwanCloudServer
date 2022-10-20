@@ -1,1 +1,10 @@
 rootProject.name = 'SwanCloudServer'
+include 'swancloud-webapp'
+include 'swancloud-organiser'
+include 'swancloud-organiser:api'
+findProject(':swancloud-organiser:api')?.name = 'api'
+include 'swancloud-organiser:runtime'
+findProject(':swancloud-organiser:runtime')?.name = 'runtime'
+include 'swancloud-application'
+include 'swancloud-security'
+
