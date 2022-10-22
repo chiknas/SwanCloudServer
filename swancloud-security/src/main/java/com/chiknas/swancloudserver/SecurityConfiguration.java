@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.security;
+package com.chiknas.swancloudserver;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -10,10 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 
 import java.util.List;
 
-/**
- * @author nkukn
- * @since 2/17/2021
- */
 @Configuration
 @EnableWebSecurity
 @Profile("production")

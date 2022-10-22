@@ -2,6 +2,7 @@ package com.chiknas.swancloudserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -11,9 +12,11 @@ import org.springframework.context.annotation.Import;
  */
 @Import({
         WebappConfiguration.class,
-        OrganiserRuntimeConfiguration.class
+        OrganiserRuntimeConfiguration.class,
+        SecurityConfiguration.class
 })
-@SpringBootApplication(scanBasePackages = "com.chiknas.swancloudserver")
+@SpringBootApplication(scanBasePackages = "com.chiknas.swancloudserver",
+        exclude = {SecurityAutoConfiguration.class})
 public class SwancloudApplication {
     public static void main(String[] args) {
         SpringApplication.run(SwancloudApplication.class, args);

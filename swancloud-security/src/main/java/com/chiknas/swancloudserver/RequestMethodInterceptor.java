@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.security;
+package com.chiknas.swancloudserver;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;

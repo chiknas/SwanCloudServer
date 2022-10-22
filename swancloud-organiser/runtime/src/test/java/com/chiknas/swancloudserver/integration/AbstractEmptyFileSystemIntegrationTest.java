@@ -20,7 +20,7 @@ import java.io.IOException;
  *     <li>Clean up after ourselves. Destroy the folder and all items inside it</li>
  * </ul>
  */
-@SpringBootTest
+@SpringBootTest(classes = TestConfig.class)
 @AutoConfigureMockMvc
 @Transactional
 public class AbstractEmptyFileSystemIntegrationTest {

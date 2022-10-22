@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.security;
+package com.chiknas.swancloudserver;
 
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;

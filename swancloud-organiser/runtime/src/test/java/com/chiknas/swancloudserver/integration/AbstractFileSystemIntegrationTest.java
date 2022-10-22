@@ -7,6 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @AutoConfigureMockMvc
 @Transactional
-@SpringBootTest(properties = {"files.base-path=src/test/resources/mockfilesystem"})
+@SpringBootTest(properties = {"files.base-path=src/test/resources/mockfilesystem"}, classes = TestConfig.class)
 public class AbstractFileSystemIntegrationTest {
 }

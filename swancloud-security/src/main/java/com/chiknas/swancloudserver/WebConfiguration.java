@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.security;
+package com.chiknas.swancloudserver;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
