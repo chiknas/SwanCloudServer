@@ -1,6 +1,7 @@
-package com.chiknas.swancloudserver.integration;
+package integration;
 
 import com.chiknas.swancloudserver.ApplicationStartUpSequence;
+import com.chiknas.swancloudserver.integration.AbstractFileSystemIntegrationTest;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

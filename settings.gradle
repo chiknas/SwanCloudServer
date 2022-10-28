@@ -7,4 +7,6 @@ include 'swancloud-organiser:runtime'
 findProject(':swancloud-organiser:runtime')?.name = 'runtime'
 include 'swancloud-application'
 include 'swancloud-security'
+include 'swancloud-runtime-common'
+include 'swancloud-runtime-common-test'
 

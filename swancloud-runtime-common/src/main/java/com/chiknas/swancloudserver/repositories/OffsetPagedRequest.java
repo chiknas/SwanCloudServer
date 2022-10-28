@@ -98,7 +98,7 @@ public class OffsetPagedRequest implements Pageable, Serializable {
 
     @Override
     public Pageable first() {
-        return new OffsetPagedRequest(0, getPageSize(), getSort());
+        return new OffsetPagedRequest(getPageSize(), 0, getSort());
     }
 
     @Override

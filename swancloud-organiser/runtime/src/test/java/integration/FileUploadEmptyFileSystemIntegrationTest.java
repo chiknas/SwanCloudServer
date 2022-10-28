@@ -1,5 +1,6 @@
-package com.chiknas.swancloudserver.integration;
+package integration;
 
+import com.chiknas.swancloudserver.integration.AbstractEmptyFileSystemIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

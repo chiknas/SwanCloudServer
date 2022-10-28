@@ -1,0 +1,14 @@
+// This will tell gradle that this is a library module
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+apply plugin: "java-test-fixtures"
+
+dependencies {
+    testFixturesApi 'org.springframework.boot:spring-boot-starter-test'
+}

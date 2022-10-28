@@ -1,12 +1,11 @@
 package com.chiknas.swancloudserver.integration;
 
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.io.IOException;
  */
 @SpringBootTest(classes = TestConfig.class)
 @AutoConfigureMockMvc
-@Transactional
 public class AbstractEmptyFileSystemIntegrationTest {
 
     @Value("${files.base-path}")
@@ -39,7 +37,7 @@ public class AbstractEmptyFileSystemIntegrationTest {
     @AfterEach
     void tearDown() throws IOException {
         // Clean up the files that might have been uploaded during testing
-        FileUtils.deleteDirectory(new File(basePath));
+        FileSystemUtils.deleteRecursively(new File(basePath));
     }
 
 }
