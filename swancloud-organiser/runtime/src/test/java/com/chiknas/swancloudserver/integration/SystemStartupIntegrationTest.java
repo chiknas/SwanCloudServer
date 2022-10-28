@@ -1,7 +1,7 @@
 package com.chiknas.swancloudserver.integration;
 
 import com.chiknas.swancloudserver.ApplicationStartUpSequence;
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -31,20 +31,20 @@ public class SystemStartupIntegrationTest extends AbstractFileSystemIntegrationT
         // Hit endpoint to verify the image is visible in the api
         MvcResult mvcResult = mockMvc
                 .perform(
-                        get("/api/files?limit=1")
+                        get("/api/files?limit=1&offset=0")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(jsonPath("$.nodes").isArray())
-                .andExpect(jsonPath("$.nodes", hasSize(1)))
-                .andExpect(jsonPath("$.nodes[0].fileName", is("test_image1.jpg")))
-                .andExpect(jsonPath("$.nodes[0].createdDate", is("2016-09-05")))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fileName", is("test_image1.jpg")))
+                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05")))
                 .andReturn();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
-        JSONObject json = new JSONObject(contentAsString);
-        String imageId = json.getJSONArray("nodes").getJSONObject(0).getString("id");
+        JSONArray json = new JSONArray(contentAsString);
+        String imageId = json.getJSONObject(0).getString("id");
 
         // Hit endpoint to verify the image has a thumbnail
         MvcResult imageThumbnailResult = mockMvc

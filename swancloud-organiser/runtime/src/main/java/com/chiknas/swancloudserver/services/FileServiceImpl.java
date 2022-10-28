@@ -1,18 +1,16 @@
 package com.chiknas.swancloudserver.services;
 
-import com.chiknas.swancloudserver.cursorpagination.CursorPage;
-import com.chiknas.swancloudserver.cursorpagination.cursors.FileMetadataCursor;
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
-import com.chiknas.swancloudserver.repositories.cursorpagination.CursorUtils;
+import com.chiknas.swancloudserver.repositories.OffsetPagedRequest;
+import com.chiknas.swancloudserver.repositories.specifications.FileMetadataSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,49 +80,20 @@ public class FileServiceImpl implements FileService {
      * Returns the metadata for all the files that are currently in the system.
      */
     @Override
-    public CursorPage<FileMetadataDTO> findAllFilesMetadata(FileMetadataCursor fileMetadataCursor, int limit,
-                                                            boolean uncategorized) {
-        List<FileMetadataEntity> allAfterCursor;
+    public List<FileMetadataDTO> findAllFilesMetadata(int limit, int offset, FileMetadataFilter filter) {
 
-        if (fileMetadataCursor != null) {
-            allAfterCursor = uncategorized || fileMetadataCursor.getCreatedDate().equals(LocalDate.EPOCH)
-                    ? fileMetadataRepository
-                    .findAllUncategorizedAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId())
-                    : fileMetadataRepository
-                    .findAllAfterCursor(PageRequest.of(0, limit + 1), fileMetadataCursor.getId(),
-                            fileMetadataCursor.getCreatedDate());
-        } else {
-            FileMetadataEntity fileMetadataEntity = new FileMetadataEntity();
-            fileMetadataEntity.setCreatedDate(LocalDate.EPOCH);
+        Specification<FileMetadataEntity> specification = Optional.ofNullable(filter)
+                .filter(FileMetadataFilter::isUncategorized)
+                .map(fileMetadataFilter -> FileMetadataSpecification.isUncategorized())
+                .orElse(Specification.where(null));
 
-            allAfterCursor = uncategorized
-                    ? fileMetadataRepository
-                    .findAll(Example.of(fileMetadataEntity), PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC
-                            , "id"))).getContent()
-                    : fileMetadataRepository
-                    .findAll(PageRequest.of(0, limit + 1, Sort.by(Sort.Direction.DESC, "createdDate"))).getContent();
-        }
-
-        return new CursorPage<>() {
-
-            @Override
-            public String getNextCursor() {
-                return allAfterCursor.size() > limit
-                        ? CursorUtils.toBase64(FileMetadataCursor.builder()
-                        .id(allAfterCursor.get(allAfterCursor.size() - 1).getId())
-                        .createdDate(allAfterCursor.get(allAfterCursor.size() - 1).getCreatedDate())
-                        .build())
-                        : null;
-            }
-
-            @Override
-            public List<FileMetadataDTO> getNodes() {
-                final List<FileMetadataEntity> fileMetadataEntities = allAfterCursor.size() > limit ?
-                        allAfterCursor.subList(0, limit) : allAfterCursor;
-                return fileMetadataEntities.stream().map(metadata -> conversionService.convert(metadata,
-                        FileMetadataDTO.class)).collect(Collectors.toList());
-            }
-        };
+        return fileMetadataRepository.findAll(
+                        specification,
+                        new OffsetPagedRequest(limit, offset, Sort.by(Sort.Direction.DESC, "createdDate"))
+                )
+                .stream()
+                .map(fileMetadata -> conversionService.convert(fileMetadata, FileMetadataDTO.class))
+                .collect(Collectors.toList());
     }
 
     public Optional<FileMetadataEntity> findFileMetadataById(Integer id) {

@@ -1,10 +1,8 @@
 package com.chiknas.swancloudserver.controllers;
 
-import com.chiknas.swancloudserver.cursorpagination.CursorPage;
-import com.chiknas.swancloudserver.cursorpagination.cursors.FileMetadataCursor;
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.dto.SetFileDateDTO;
-import com.chiknas.swancloudserver.repositories.cursorpagination.CursorUtils;
+import com.chiknas.swancloudserver.services.FileMetadataFilter;
 import com.chiknas.swancloudserver.services.FileOrganiserService;
 import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +35,10 @@ public class FileController {
     }
 
     @GetMapping("/files")
-    public CursorPage<FileMetadataDTO> getFiles(@RequestParam(required = false)
-                                                String cursor,
-                                                @RequestParam int limit) {
-        return fileService.findAllFilesMetadata((FileMetadataCursor) CursorUtils.base64ToCursor(cursor), limit, false);
-    }
-
-    @GetMapping("/files/uncategorized")
-    public CursorPage<FileMetadataDTO> getUncategorizedFiles(@RequestParam(required = false)
-                                                             String cursor,
-                                                             @RequestParam int limit) {
-        return fileService.findAllFilesMetadata((FileMetadataCursor) CursorUtils.base64ToCursor(cursor), limit, true);
+    public List<FileMetadataDTO> getFiles(@RequestParam int limit,
+                                          @RequestParam int offset,
+                                          @RequestParam(required = false) FileMetadataFilter filter) {
+        return fileService.findAllFilesMetadata(limit, offset, filter);
     }
 
 }

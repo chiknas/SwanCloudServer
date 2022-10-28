@@ -1,6 +1,5 @@
 package com.chiknas.swancloudserver.controllers;
 
-import com.chiknas.swancloudserver.cursorpagination.CursorPage;
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,9 @@ public class WelcomeController {
     @GetMapping("/")
     public String main(Model model) {
 
-        CursorPage<FileMetadataDTO> allFilesMetadata = fileService.findAllFilesMetadata(null, 1, false);
+        List<FileMetadataDTO> allFilesMetadata = fileService.findAllFilesMetadata(1, 0, null);
 
-        model.addAttribute("message", allFilesMetadata.getNodes().stream().findFirst().orElse(null));
+        model.addAttribute("message", allFilesMetadata.stream().findFirst().orElse(null));
         model.addAttribute("tasks", tasks);
 
         return "welcome"; //view

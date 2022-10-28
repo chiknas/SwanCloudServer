@@ -47,15 +47,15 @@ public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileS
         // Hit endpoint to verify the image is uploaded and visible in the api
         mockMvc
                 .perform(
-                        get("/api/files?limit=1")
+                        get("/api/files?limit=1&offset=0")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(jsonPath("$.nodes").isArray())
-                .andExpect(jsonPath("$.nodes", hasSize(1)))
-                .andExpect(jsonPath("$.nodes[0].fileName", is("test_image.jpg")))
-                .andExpect(jsonPath("$.nodes[0].createdDate", is("2015-08-28")))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fileName", is("test_image.jpg")))
+                .andExpect(jsonPath("$[0].createdDate", is("2015-08-28")))
                 .andReturn();
     }
 }
