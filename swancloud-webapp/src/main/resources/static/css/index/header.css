@@ -19,3 +19,11 @@
   display: flex;
   gap: 2em;
 }
+
+#files {
+  display: none;
+}
+
+#filesInputLabel {
+  cursor: pointer;
+}

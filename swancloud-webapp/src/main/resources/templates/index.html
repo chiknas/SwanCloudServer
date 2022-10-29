@@ -19,10 +19,10 @@
           th:action="@{/upload}"
           enctype="multipart/form-data"
         >
-          <input id="files" type="file" name="files" multiple />
-          <button id="upload" type="submit">
+          <label for="files" id="filesInputLabel">
             <img id="upload-image" th:src="@{/img/icons/upload.svg}" />
-          </button>
+            <input id="files" type="file" name="files" multiple />
+          </label>
         </form>
       </div>
       <div class="filters">

@@ -21,6 +21,7 @@ let offset = 0;
 const galleryContainer = document.getElementById("gallery-container");
 const beforeDate = document.getElementById("beforeDate");
 beforeDate.valueAsDate = new Date();
+const uploadForm = document.getElementById("upload-form");
 const filesInput = document.getElementById("files");
 
 // On date filter change refresh the gallery to get results based on the new date
@@ -30,6 +31,12 @@ beforeDate.addEventListener("change", (e) => {
     galleryContainer.replaceChildren();
     loadNextPage();
   }, 2000);
+});
+
+// Event listener to upload files as soon as the user selects them.
+// No need to click a button or something.
+filesInput.addEventListener("change", () => {
+  uploadForm.submit();
 });
 
 /**
