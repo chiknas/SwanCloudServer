@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
     <title>Swancloud Login</title>
-    <link rel="icon" type="image/x-icon" href="/img/logo.ico">
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico"/>
     <link rel="stylesheet" th:href="@{/css/reset.css}"/>
     <link rel="stylesheet" th:href="@{/css/login.css}"/>
 </head>
@@ -16,9 +17,8 @@
     </button>
     <script type="text/javascript">
         document.getElementById("login").onclick = function () {
-            location.href = "/oauth2/authorization/google";
+          location.href = "/oauth2/authorization/google";
         };
-
 
     </script>
 </div>

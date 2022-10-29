@@ -6,7 +6,7 @@
 }
 
 .gallery > li {
-  flex-basis: 250px; /* width: 350px; */
+  flex-basis: 250px;
 }
 
 .gallery li img {
@@ -20,4 +20,10 @@
 .galleryImage:hover {
   opacity: 0.5;
   cursor: pointer;
+}
+
+@media screen and (max-width: 600px) {
+  .gallery > li {
+    flex-basis: 100px;
+  }
 }
