@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body>
+<div class="container">
+    <img class="content" th:src="@{/img/logo.svg}"/>
+
+    <button id="login" type="button" class="login-with-google-btn content">
+        Sign in with Google
+    </button>
+    <script type="text/javascript">
+        document.getElementById("login").onclick = function () {
+            location.href = "/oauth2/authorization/google";
+        };
+
+
+    </script>
+</div>
+</body>
+</html>

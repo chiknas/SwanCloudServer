@@ -1,30 +1,50 @@
 package com.chiknas.swancloudserver;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
 
-import java.util.List;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @Profile("production")
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
 
-    @Value("#{${security.api.keys}}")
-    private List<String> knownApiKeys;
+    private final SecurityAdminConfigurationProperties securityAdminConfigurationProperties;
 
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.
-                antMatcher("/**").
-                csrf().disable().
-                cors().and().
-                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(new APIKeyAuthFilter(knownApiKeys)).authorizeRequests().anyRequest().authenticated();
+    @Autowired
+    public SecurityConfiguration(SecurityAdminConfigurationProperties securityAdminConfigurationProperties) {
+        this.securityAdminConfigurationProperties = securityAdminConfigurationProperties;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+                .authorizeHttpRequests((authorizeHttpRequestsCustomizer) -> {
+                            try {
+                                authorizeHttpRequestsCustomizer
+                                        .antMatchers("/login", "/img/**", "/css/**", "/oauth/**", "/access-denied")
+                                        .permitAll()
+                                        .anyRequest().authenticated()
+                                        .and()
+                                        .oauth2Login()
+                                        .loginPage("/login")
+                                        .and()
+                                        .addFilterAfter(new AuthorizedUsersFilter(securityAdminConfigurationProperties.getAccounts()), OAuth2LoginAuthenticationFilter.class)
+                                        .exceptionHandling()
+                                        .accessDeniedPage("/access-denied");
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                )
+                .httpBasic(withDefaults())
+                .build();
     }
 }

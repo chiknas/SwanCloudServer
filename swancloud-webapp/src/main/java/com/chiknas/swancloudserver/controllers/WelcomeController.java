@@ -1,6 +1,5 @@
 package com.chiknas.swancloudserver.controllers;
 
-import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,19 +22,8 @@ public class WelcomeController {
         this.fileService = fileService;
     }
 
-    @GetMapping("/")
-    public String main(Model model) {
-
-        List<FileMetadataDTO> allFilesMetadata = fileService.findAllFilesMetadata(1, 0, null);
-
-        model.addAttribute("message", allFilesMetadata.stream().findFirst().orElse(null));
-        model.addAttribute("tasks", tasks);
-
-        return "welcome"; //view
-    }
-
     // /hello?name=kotlin
-    @GetMapping("/hello")
+    @GetMapping("/")
     public String mainWithParam(
             @RequestParam(name = "name", required = false, defaultValue = "")
             String name, Model model) {

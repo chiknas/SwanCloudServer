@@ -15,8 +15,8 @@ Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html
 ## Spring Profiles
 
 1. production = profile to be switch the app to production mode. Current functionality on production mode:
-   * API keys enabled: the server will only respond to known clients. set this up with the security.api.keys property
-   * HTTPS only (check security section to setup certificate vars in this mode)
+    * API keys enabled: the server will only respond to known clients. set this up with the security.api.keys property
+    * HTTPS only (check security section to setup certificate vars in this mode)
 
 ## Env variables
 
@@ -27,14 +27,21 @@ Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html
 
 ### <ins>Security('production' only)</ins>
 
-1. security.api.keys = api keys that the server will trust and server content to when 'production' profile is enabled.
-   syntax example: `security.api.keys = {'key 1', 'key 2'}`
+1. GMAIL_ADMIN_ACCOUNTS = Comma separated list of gmail accounts that have access to this system. Everyone else is
+   kicked out.
+   Security is handled with OAuth2 and Google.
 
-2. server.ssl.key-store = the path where the keystore is located. only PKCS12 key-stores are allowed.
+2. OAUTH2_CLIENT_ID = Client ID taken from https://console.cloud.google.com/apis/credentials you have setup for your
+   app.
 
-2. server.ssl.key-alias = the alias of the key to look for in your certificate
+3. OAUTH2_CLIENT_SECRET = Client Secret taken from https://console.cloud.google.com/apis/credentials you have setup for
+   your app.
 
-3. server.ssl.key-store-password = the password used to generate the keystore
+4. server.ssl.key-store = the path where the keystore is located. only PKCS12 key-stores are allowed.
+
+5. server.ssl.key-alias = the alias of the key to look for in your certificate
+
+6. server.ssl.key-store-password = the password used to generate the keystore
 
 ## Useful commands
 
