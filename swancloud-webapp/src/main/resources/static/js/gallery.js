@@ -41,6 +41,10 @@ const addImage = (id) => {
 
   const img = document.createElement("img");
   img.src = `/api/files/thumbnail/${id}`;
+  img.classList.add("galleryImage");
+  img.onclick = () => {
+    window.location.href = `/preview/${id}`;
+  };
 
   imageContainer.appendChild(img);
   galleryContainer.appendChild(imageContainer);

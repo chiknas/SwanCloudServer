@@ -16,3 +16,8 @@
   vertical-align: middle;
   border-radius: 5px;
 }
+
+.galleryImage:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
