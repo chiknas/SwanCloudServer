@@ -2,7 +2,6 @@ package com.chiknas.swancloudserver.services;
 
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
 import com.chiknas.swancloudserver.repositories.OffsetPagedRequest;
-import com.chiknas.swancloudserver.repositories.specifications.FileMetadataSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -79,8 +78,6 @@ class FileServiceImplTest {
         // Ensure the page request has the specified values
         assertEquals(10, offsetPagedRequestArgumentCaptor.getValue().getPageSize());
         assertEquals(0, offsetPagedRequestArgumentCaptor.getValue().getOffset());
-        // And the filter/specification is set to uncategorized
-        assertEquals(FileMetadataSpecification.isUncategorized(), specificationArgumentCaptor.getValue());
     }
 
     // Tests we can retrieve ALL data when the filter is set and uncategorized flag is off
@@ -105,7 +102,5 @@ class FileServiceImplTest {
         // Ensure the page request has the specified values
         assertEquals(10, offsetPagedRequestArgumentCaptor.getValue().getPageSize());
         assertEquals(0, offsetPagedRequestArgumentCaptor.getValue().getOffset());
-        // And the filter/specification is empty
-        assertEquals(Specification.where(null), specificationArgumentCaptor.getValue());
     }
 }

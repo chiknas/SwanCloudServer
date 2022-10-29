@@ -83,8 +83,9 @@ public class FileServiceImpl implements FileService {
     public List<FileMetadataDTO> findAllFilesMetadata(int limit, int offset, FileMetadataFilter filter) {
 
         Specification<FileMetadataEntity> specification = Optional.ofNullable(filter)
-                .filter(FileMetadataFilter::isUncategorized)
-                .map(fileMetadataFilter -> FileMetadataSpecification.isUncategorized())
+                .map(fileMetadataFilter ->
+                        FileMetadataSpecification.forUncategorized(filter.getUncategorized())
+                                .and(FileMetadataSpecification.forBeforeDate(filter.getBeforeDate())))
                 .orElse(Specification.where(null));
 
         return fileMetadataRepository.findAll(

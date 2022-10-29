@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Swancloud</title>
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico" />
+    <link rel="stylesheet" th:href="@{/css/reset.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/index.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/filter.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/gallery.css}" />
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="header">
+        <form
+          id="upload-form"
+          method="post"
+          th:action="@{/upload}"
+          enctype="multipart/form-data"
+        >
+          <input id="files" type="file" name="files" multiple />
+          <button id="upload" type="submit">
+            <img id="upload-image" th:src="@{/img/icons/upload.svg}" />
+          </button>
+        </form>
+      </div>
+      <div class="filters">
+        <input type="date" name="date" id="beforeDate" />
+      </div>
+      <ul class="gallery" id="gallery-container"></ul>
+      <script type="text/javascript" th:src="@{/js/gallery.js}"></script>
+    </div>
+  </body>
+</html>

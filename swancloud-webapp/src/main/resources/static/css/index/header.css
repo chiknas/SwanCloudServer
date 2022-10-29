@@ -1,0 +1,21 @@
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding: 2em;
+  gap: 1em;
+  background-color: #26068f;
+}
+
+#upload {
+  border-radius: 100%;
+}
+
+#upload-image {
+  width: 40px;
+}
+
+#upload-form {
+  display: flex;
+  gap: 2em;
+}

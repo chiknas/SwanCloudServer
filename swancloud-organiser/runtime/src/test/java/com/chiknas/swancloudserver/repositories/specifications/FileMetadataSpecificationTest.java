@@ -11,6 +11,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -31,13 +32,13 @@ class FileMetadataSpecificationTest {
     @Test
     public void isUncategorized() {
         // Given uncategorized spec
-        Specification<FileMetadataEntity> uncategorized = FileMetadataSpecification.isUncategorized();
+        Specification<FileMetadataEntity> uncategorized = FileMetadataSpecification.forUncategorized(true);
 
         // When the predicate is created
         uncategorized.toPredicate(root, query, criteriaBuilder);
 
         // Then the created date is checked that is the first epoch date
         Path<Object> createdDate = root.get("createdDate");
-        verify(criteriaBuilder, times(1)).equal(eq(createdDate), eq("1970-01-01"));
+        verify(criteriaBuilder, times(1)).equal(eq(createdDate), eq(LocalDate.parse("1970-01-01")));
     }
 }
