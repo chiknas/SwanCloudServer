@@ -6,7 +6,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -14,7 +13,6 @@ import java.io.Serializable;
  */
 public class OffsetPagedRequest implements Pageable, Serializable {
 
-    @Serial
     private static final long serialVersionUID = -2190939515828148784L;
     private final int limit;
     private final int offset;
@@ -115,12 +113,12 @@ public class OffsetPagedRequest implements Pageable, Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
 
-        if (!(o instanceof OffsetPagedRequest that)) return false;
+        if (!(o instanceof OffsetPagedRequest)) return false;
 
         return new EqualsBuilder()
-                .append(limit, that.limit)
-                .append(offset, that.offset)
-                .append(sort, that.sort)
+                .append(limit, ((OffsetPagedRequest) o).limit)
+                .append(offset, ((OffsetPagedRequest) o).offset)
+                .append(sort, ((OffsetPagedRequest) o).sort)
                 .isEquals();
     }
 
