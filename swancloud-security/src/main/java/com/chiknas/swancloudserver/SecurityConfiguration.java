@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver;
 
+import com.chiknas.swancloudserver.entities.User;
 import com.chiknas.swancloudserver.jwt.JwtSecurityConfigurerAdapter;
 import com.chiknas.swancloudserver.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.servlet.http.Cookie;
 
 
 @Configuration
@@ -40,7 +43,10 @@ public class SecurityConfiguration {
     @Bean
     @Order(3)
     public SecurityFilterChain webAppFilterChain(HttpSecurity http) throws Exception {
-        return withHttpSecurity(http)
+        return http
+                //              Enable for POST requests to work with postman
+                // until https://stackoverflow.com/questions/36261781/x-csrf-token-is-not-generated-by-spring-boot
+//                .csrf().disable()
                 .antMatcher("/**")
                 .authorizeRequests()
                 .antMatchers("/login", "/img/**", "/css/**", "/access-denied")
@@ -49,7 +55,12 @@ public class SecurityConfiguration {
                 .authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login")
+                .loginPage("/login").successHandler((request, response, authentication) -> {
+                    User user = (User) authentication.getPrincipal();
+                    String token = jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
+                    response.addCookie(new Cookie("Bearer", token));
+                    response.sendRedirect("/");
+                })
                 .and()
                 .exceptionHandling()
                 .accessDeniedPage("/access-denied")
@@ -63,7 +74,7 @@ public class SecurityConfiguration {
     @Bean
     @Order(2)
     public SecurityFilterChain restApiFilterChain(HttpSecurity http) throws Exception {
-        return withRestHttpSecurity(http)
+        return withRestApiSecurity(http)
                 .antMatcher("/api/**")
                 .authorizeRequests()
                 .anyRequest()
@@ -78,7 +89,7 @@ public class SecurityConfiguration {
     @Bean
     @Order(1)
     public SecurityFilterChain authenticationFilterChain(HttpSecurity http) throws Exception {
-        return withRestHttpSecurity(http)
+        return withRestApiSecurity(http)
                 .antMatcher("/auth/**")
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/auth/signin")
@@ -90,19 +101,11 @@ public class SecurityConfiguration {
     /**
      * Http security configuration for every single HTTP endpoint in the system.
      */
-    private HttpSecurity withHttpSecurity(HttpSecurity http) throws Exception {
+    private HttpSecurity withRestApiSecurity(HttpSecurity http) throws Exception {
         return http
                 .authenticationProvider(authProvider())
                 .apply(new JwtSecurityConfigurerAdapter(jwtTokenProvider))
-                .and();
-    }
-
-    /**
-     * Http security for REST endpoints in the system. Basic http security {@link SecurityConfiguration#withHttpSecurity}
-     * rules apply too.
-     */
-    private HttpSecurity withRestHttpSecurity(HttpSecurity http) throws Exception {
-        return withHttpSecurity(http)
+                .and()
 //              Enable for POST requests to work with postman
 //                .csrf().disable()
                 .sessionManagement()

@@ -10,7 +10,7 @@
   </head>
   <body>
     <div class="image-container">
-      <img th:src="@{${'/api/files/preview/' + id}}" class="preview-image" />
+      <img th:src="*{'data:image/png;base64,'+image}" class="preview-image" />
     </div>
   </body>
 </html>

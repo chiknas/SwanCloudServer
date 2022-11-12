@@ -4,6 +4,7 @@ import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +31,8 @@ public class IndexController {
 
     @GetMapping("/preview/{id}")
     public String preview(Model model, @PathVariable String id) {
-        model.addAttribute("id", id);
+        fileService.getImageById(Integer.valueOf(id))
+                .ifPresent(image -> model.addAttribute("image", Base64Utils.encodeToString(image)));
         return "image_preview"; //view
     }
 

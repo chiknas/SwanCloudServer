@@ -107,6 +107,7 @@ public class FileServiceImpl implements FileService {
      * @param id - the {@link FileMetadataEntity} id
      * @return - byte array of the real image
      */
+    @Override
     public Optional<byte[]> getImageById(Integer id) {
         return findFileMetadataById(id).map(fileMetadata -> {
             final String path = fileMetadata.getPath();

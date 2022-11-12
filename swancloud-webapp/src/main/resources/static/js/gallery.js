@@ -12,6 +12,12 @@ const throttle = (callback, time) => {
   }, time);
 };
 
+function getBearerFromCookie() {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; Bearer=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
 // How many items to load per request
 const limit = 100;
 // Skip so many items to load the next page
@@ -44,17 +50,25 @@ filesInput.addEventListener("change", () => {
  * @param {*} id the id of the image as returned from the server
  */
 const addImage = (id) => {
-  const imageContainer = document.createElement("li");
+  fetch(`/api/files/thumbnail/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getBearerFromCookie()}`,
+    },
+  })
+    .then((res) => res.blob())
+    .then((response) => {
+      const imageContainer = document.createElement("li");
 
-  const img = document.createElement("img");
-  img.src = `/api/files/thumbnail/${id}`;
-  img.classList.add("galleryImage");
-  img.onclick = () => {
-    window.location.href = `/preview/${id}`;
-  };
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(response);
+      img.classList.add("galleryImage");
+      img.onclick = () => {
+        window.location.href = `/preview/${id}`;
+      };
 
-  imageContainer.appendChild(img);
-  galleryContainer.appendChild(imageContainer);
+      imageContainer.appendChild(img);
+      galleryContainer.appendChild(imageContainer);
+    });
 };
 
 /**
@@ -62,7 +76,12 @@ const addImage = (id) => {
  */
 const loadNextPage = () => {
   fetch(
-    `/api/files?limit=${limit}&offset=${offset}&beforeDate=${beforeDate.value}`
+    `/api/files?limit=${limit}&offset=${offset}&beforeDate=${beforeDate.value}`,
+    {
+      headers: {
+        Authorization: `Bearer ${getBearerFromCookie()}`,
+      },
+    }
   )
     .then((response) => response.json())
     .then((json) => {
