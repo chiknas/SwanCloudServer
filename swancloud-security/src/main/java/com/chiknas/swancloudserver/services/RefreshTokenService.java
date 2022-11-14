@@ -2,10 +2,13 @@ package com.chiknas.swancloudserver.services;
 
 
 import com.chiknas.swancloudserver.entities.RefreshToken;
+import com.chiknas.swancloudserver.entities.User;
 import com.chiknas.swancloudserver.repositories.RefreshTokenRepository;
 import com.chiknas.swancloudserver.repositories.UserRepository;
+import com.chiknas.swancloudserver.repositories.specifications.RefreshTokenSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +35,14 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
-    public RefreshToken createRefreshToken(Long userId) {
-        return userRepository.findById(userId).map(user -> {
-                    RefreshToken refreshToken = new RefreshToken();
+    public RefreshToken createRefreshToken(User user) {
+        RefreshToken refreshToken = new RefreshToken();
 
-                    refreshToken.setUser(userRepository.findById(userId).get());
-                    refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
-                    refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setUser(user);
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+        refreshToken.setToken(UUID.randomUUID().toString());
 
-                    return refreshTokenRepository.save(refreshToken);
-                })
-                .orElseThrow(() -> new RuntimeException("User with id: " + userId + " was not found!"));
+        return refreshTokenRepository.save(refreshToken);
     }
 
     public RefreshToken verifyExpiration(RefreshToken token) {
@@ -56,6 +56,11 @@ public class RefreshTokenService {
 
     @Transactional
     public int deleteByUserId(Long userId) {
-        return refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
+        return userRepository.findById(userId).map(refreshTokenRepository::deleteByUser).orElse(0);
+    }
+
+    @Scheduled(cron = "0 0 6 * * *")
+    public void cleanupRefreshTokens() {
+        refreshTokenRepository.deleteAll(refreshTokenRepository.findAll(RefreshTokenSpecification.isExpired()));
     }
 }
