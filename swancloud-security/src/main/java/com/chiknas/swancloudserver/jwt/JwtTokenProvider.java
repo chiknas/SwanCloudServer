@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver.jwt;
 
+import com.chiknas.swancloudserver.entities.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -40,9 +40,9 @@ public class JwtTokenProvider {
      * The token is signed with the {@link JwtTokenProvider#HASH_ALGORITHM} and is valid for
      * {@link JwtTokenProvider#validityInMilliseconds} milliseconds.
      */
-    public String createToken(String username, List<String> roles) {
-        Claims claims = Jwts.claims().setSubject(username);
-        claims.put("roles", roles);
+    public String createToken(User user) {
+        Claims claims = Jwts.claims().setSubject(user.getUsername());
+        claims.put("roles", user.getRoles());
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
         return Jwts.builder()

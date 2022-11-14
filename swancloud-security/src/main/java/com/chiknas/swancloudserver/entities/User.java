@@ -24,10 +24,12 @@ import static java.util.stream.Collectors.toList;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
+    private Long id;
 
-    private String username;
+    @Column(name = "email")
+    private String email;
 
+    @Column(name = "password")
     private String password;
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
@@ -45,7 +47,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.email;
     }
 
     @Override

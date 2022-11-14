@@ -16,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DevSecurityConfiguration {
 
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
+    public AuthenticationManager authenticationManager() {
         return authentication -> null;
     }
 
@@ -25,6 +25,5 @@ public class DevSecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
 }

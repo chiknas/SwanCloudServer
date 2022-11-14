@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class DataInitializer implements ApplicationListener<ApplicationReadyEvent> {
@@ -27,15 +27,15 @@ public class DataInitializer implements ApplicationListener<ApplicationReadyEven
         refreshTokenRepository.deleteAll();
         users.deleteAll();
         this.users.save(User.builder()
-                .username("user@gmail.com")
+                .email("user@gmail.com")
                 .password(this.passwordEncoder.encode("password"))
-                .roles(Arrays.asList("ROLE_USER"))
+                .roles(List.of("ROLE_USER"))
                 .build()
         );
         this.users.save(User.builder()
-                .username("admin")
+                .email("afro@gmail.com")
                 .password(this.passwordEncoder.encode("password"))
-                .roles(Arrays.asList("ROLE_USER", "ROLE_ADMIN"))
+                .roles(List.of("ROLE_USER", "ROLE_ADMIN"))
                 .build()
         );
     }

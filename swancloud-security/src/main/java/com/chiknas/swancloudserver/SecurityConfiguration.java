@@ -18,6 +18,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import javax.servlet.http.Cookie;
 
@@ -44,10 +46,9 @@ public class SecurityConfiguration {
     @Order(3)
     public SecurityFilterChain webAppFilterChain(HttpSecurity http) throws Exception {
         return http
-                //              Enable for POST requests to work with postman
-                // until https://stackoverflow.com/questions/36261781/x-csrf-token-is-not-generated-by-spring-boot
-//                .csrf().disable()
                 .antMatcher("/**")
+                .csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
+                .and()
                 .authorizeRequests()
                 .antMatchers("/login", "/img/**", "/css/**", "/access-denied")
                 .permitAll()
@@ -55,16 +56,20 @@ public class SecurityConfiguration {
                 .authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login").successHandler((request, response, authentication) -> {
-                    User user = (User) authentication.getPrincipal();
-                    String token = jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
-                    response.addCookie(new Cookie("Bearer", token));
-                    response.sendRedirect("/");
-                })
+                .loginPage("/login").successHandler(getWebAppAuthenticationSuccessHandler())
                 .and()
                 .exceptionHandling()
                 .accessDeniedPage("/access-denied")
                 .and().build();
+    }
+
+    private AuthenticationSuccessHandler getWebAppAuthenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            User user = (User) authentication.getPrincipal();
+            String token = jwtTokenProvider.createToken(user);
+            response.addCookie(new Cookie("Bearer", token));
+            response.sendRedirect("/");
+        };
     }
 
     /**
@@ -106,8 +111,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(authProvider())
                 .apply(new JwtSecurityConfigurerAdapter(jwtTokenProvider))
                 .and()
-//              Enable for POST requests to work with postman
-//                .csrf().disable()
+                .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and();
