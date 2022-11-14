@@ -14,7 +14,7 @@ const throttle = (callback, time) => {
 
 function getBearerFromCookie() {
   const value = `; ${document.cookie}`;
-  const parts = value.split(`; Bearer=`);
+  const parts = value.split(`; BEARER=`);
   if (parts.length === 2) return parts.pop().split(";").shift();
 }
 

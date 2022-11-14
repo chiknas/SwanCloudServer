@@ -5,13 +5,14 @@
   padding: 2em;
   gap: 1em;
   background-color: #26068f;
+  align-items: center;
 }
 
 #upload {
   border-radius: 100%;
 }
 
-#upload-image {
+.header-icon {
   width: 40px;
 }
 
@@ -25,5 +26,12 @@
 }
 
 #filesInputLabel {
+  cursor: pointer;
+}
+
+#logout-button {
+  background: transparent;
+  border: transparent;
+  padding: 0;
   cursor: pointer;
 }

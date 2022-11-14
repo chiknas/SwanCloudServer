@@ -21,9 +21,18 @@
           enctype="multipart/form-data"
         >
           <label for="files" id="filesInputLabel">
-            <img id="upload-image" th:src="@{/img/icons/upload.svg}" />
+            <img
+              id="upload-image"
+              class="header-icon"
+              th:src="@{/img/icons/upload.svg}"
+            />
             <input id="files" type="file" name="files" multiple />
           </label>
+        </form>
+        <form method="post" th:action="@{/logout}">
+          <button id="logout-button" type="submit">
+            <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
+          </button>
         </form>
       </div>
       <div class="filters">

@@ -58,6 +58,10 @@ public class SecurityConfiguration {
                 .formLogin()
                 .loginPage("/login").successHandler(getWebAppAuthenticationSuccessHandler())
                 .and()
+                .logout().logoutUrl("/logout").logoutSuccessUrl("/login")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID", "BEARER")
+                .and()
                 .exceptionHandling()
                 .accessDeniedPage("/access-denied")
                 .and().build();
@@ -67,7 +71,7 @@ public class SecurityConfiguration {
         return (request, response, authentication) -> {
             User user = (User) authentication.getPrincipal();
             String token = jwtTokenProvider.createToken(user);
-            response.addCookie(new Cookie("Bearer", token));
+            response.addCookie(new Cookie("BEARER", token));
             response.sendRedirect("/");
         };
     }
