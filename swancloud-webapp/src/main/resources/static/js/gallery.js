@@ -12,12 +12,6 @@ const throttle = (callback, time) => {
   }, time);
 };
 
-function getBearerFromCookie() {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; BEARER=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-}
-
 // How many items to load per request
 const limit = 100;
 // Skip so many items to load the next page
@@ -50,11 +44,7 @@ filesInput.addEventListener("change", () => {
  * @param {*} id the id of the image as returned from the server
  */
 const addImage = (id) => {
-  fetch(`/api/files/thumbnail/${id}`, {
-    headers: {
-      Authorization: `Bearer ${getBearerFromCookie()}`,
-    },
-  })
+  fetch(`/api/files/thumbnail/${id}`)
     .then((res) => res.blob())
     .then((response) => {
       const imageContainer = document.createElement("li");
@@ -76,12 +66,7 @@ const addImage = (id) => {
  */
 const loadNextPage = () => {
   fetch(
-    `/api/files?limit=${limit}&offset=${offset}&beforeDate=${beforeDate.value}`,
-    {
-      headers: {
-        Authorization: `Bearer ${getBearerFromCookie()}`,
-      },
-    }
+    `/api/files?limit=${limit}&offset=${offset}&beforeDate=${beforeDate.value}`
   )
     .then((response) => response.json())
     .then((json) => {

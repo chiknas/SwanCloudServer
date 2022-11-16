@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.jwt;
+package com.chiknas.swancloudserver.filters.jwt;
 
 import com.chiknas.swancloudserver.entities.User;
 import io.jsonwebtoken.*;
@@ -13,9 +13,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
+
+import static com.chiknas.swancloudserver.SecurityConfiguration.JWT_TOKEN_NAME;
 
 @Slf4j
 @Component
@@ -63,11 +67,14 @@ public class JwtTokenProvider {
     }
 
     public Optional<String> resolveToken(HttpServletRequest req) {
+        // Search request header for token (this is used on the API)
         String bearerToken = req.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return Optional.of(bearerToken.substring(7));
         }
-        return Optional.empty();
+
+        // Search jwt cookie for token (this is used in the WEB APP)
+        return Arrays.stream(req.getCookies()).filter(cookie -> JWT_TOKEN_NAME.equals(cookie.getName())).findFirst().map(Cookie::getValue);
     }
 
     public boolean validateToken(String token) {

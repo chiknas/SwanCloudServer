@@ -1,8 +1,9 @@
 package com.chiknas.swancloudserver;
 
 import com.chiknas.swancloudserver.entities.User;
-import com.chiknas.swancloudserver.jwt.JwtSecurityConfigurerAdapter;
-import com.chiknas.swancloudserver.jwt.JwtTokenProvider;
+import com.chiknas.swancloudserver.filters.basicauth.BasicAuthSecurityConfigurerAdapter;
+import com.chiknas.swancloudserver.filters.jwt.JwtSecurityConfigurerAdapter;
+import com.chiknas.swancloudserver.filters.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,11 @@ import javax.servlet.http.Cookie;
 @Profile("production")
 public class SecurityConfiguration {
 
+    public static final String WEBAPP_LOGIN_URL = "/login";
+    public static final String WEBAPP_LOGOUT_URL = "/logout";
+    public static final String WEBAPP_RESET_PASSWORD_URL = "/reset-password";
+    public static final String JWT_TOKEN_NAME = "BEARER";
+
     private final UserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -49,18 +55,20 @@ public class SecurityConfiguration {
                 .antMatcher("/**")
                 .csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
                 .and()
+                .apply(new BasicAuthSecurityConfigurerAdapter())
+                .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/img/**", "/css/**", "/access-denied")
+                .antMatchers(WEBAPP_LOGIN_URL, "/img/**", "/css/**", "/access-denied")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login").successHandler(getWebAppAuthenticationSuccessHandler())
+                .loginPage(WEBAPP_LOGIN_URL).successHandler(getWebAppAuthenticationSuccessHandler())
                 .and()
-                .logout().logoutUrl("/logout").logoutSuccessUrl("/login")
+                .logout().logoutUrl(WEBAPP_LOGOUT_URL).logoutSuccessUrl(WEBAPP_LOGIN_URL)
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID", "BEARER")
+                .deleteCookies("JSESSIONID", JWT_TOKEN_NAME)
                 .and()
                 .exceptionHandling()
                 .accessDeniedPage("/access-denied")
@@ -71,7 +79,7 @@ public class SecurityConfiguration {
         return (request, response, authentication) -> {
             User user = (User) authentication.getPrincipal();
             String token = jwtTokenProvider.createToken(user);
-            response.addCookie(new Cookie("BEARER", token));
+            response.addCookie(new Cookie(JWT_TOKEN_NAME, token));
             response.sendRedirect("/");
         };
     }

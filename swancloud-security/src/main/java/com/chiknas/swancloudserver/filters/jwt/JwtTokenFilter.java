@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.jwt;
+package com.chiknas.swancloudserver.filters.jwt;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -17,4 +17,9 @@ public class LoginController {
         return "denied"; //view
     }
 
+    @GetMapping("/reset-password")
+    public String resetPasswordPage(Model model) {
+        return "reset_password"; //view
+    }
+
 }

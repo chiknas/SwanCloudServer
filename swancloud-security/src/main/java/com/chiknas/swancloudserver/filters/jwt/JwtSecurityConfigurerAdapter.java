@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.jwt;
+package com.chiknas.swancloudserver.filters.jwt;
 
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

@@ -31,6 +31,13 @@ public class User implements UserDetails {
 
     @Column(name = "password")
     private String password;
+
+    // Every new user will be created with a default password.
+    // So expired
+    @Builder.Default
+    @Column(name = "password_expired")
+    private boolean isPasswordExpired = true;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
