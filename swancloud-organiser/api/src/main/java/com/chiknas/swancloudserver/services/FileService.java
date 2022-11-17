@@ -15,7 +15,7 @@ public interface FileService {
     /**
      * Saves a new file in the system.
      */
-    void storeFile(MultipartFile file);
+    Optional<FileMetadataDTO> storeFile(MultipartFile file);
 
     /**
      * Returns details on the files that exist currently in the system.

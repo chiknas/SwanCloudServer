@@ -34,6 +34,7 @@
             <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
           </button>
         </form>
+        <p th:text="${lastFileUploadedDate}"></p>
       </div>
       <div class="filters">
         <input type="date" name="date" id="beforeDate" />

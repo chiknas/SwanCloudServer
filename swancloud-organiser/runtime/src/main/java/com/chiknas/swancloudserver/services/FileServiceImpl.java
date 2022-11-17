@@ -54,7 +54,7 @@ public class FileServiceImpl implements FileService {
      * Saves a multipart file in the current system drive. The directory used is ${files.base-path}
      */
     @Override
-    public void storeFile(MultipartFile file) {
+    public Optional<FileMetadataDTO> storeFile(MultipartFile file) {
         // Normalize file name
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
@@ -69,7 +69,7 @@ public class FileServiceImpl implements FileService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Index the file in the database
-            indexingService.index(targetLocation.toFile());
+            return indexingService.index(targetLocation.toFile());
 
         } catch (IOException ex) {
             throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);

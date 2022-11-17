@@ -2,6 +2,7 @@ package com.chiknas.swancloudserver.controllers;
 
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.dto.SetFileDateDTO;
+import com.chiknas.swancloudserver.security.CurrentUser;
 import com.chiknas.swancloudserver.services.FileMetadataFilter;
 import com.chiknas.swancloudserver.services.FileOrganiserService;
 import com.chiknas.swancloudserver.services.FileService;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("api")
@@ -20,16 +22,22 @@ public class FileController {
 
     private final FileService fileService;
     private final FileOrganiserService fileOrganiserService;
+    private final CurrentUser currentUser;
 
     @Autowired
-    public FileController(FileService fileService, FileOrganiserService fileOrganiserService) {
+    public FileController(FileService fileService, FileOrganiserService fileOrganiserService, CurrentUser currentUser) {
         this.fileService = fileService;
         this.fileOrganiserService = fileOrganiserService;
+        this.currentUser = currentUser;
     }
 
     @PostMapping("/upload")
     public void handleFileUpload(@RequestPart("data") List<MultipartFile> files) {
-        files.forEach(fileService::storeFile);
+        files.stream().map(fileService::storeFile)
+                .filter(Optional::isPresent)
+                .flatMap(fileMetadata -> Stream.of(fileMetadata.get().getCreatedDate()))
+                .max(LocalDate::compareTo)
+                .ifPresent(currentUser::setLastUploadedFileDate);
     }
 
     @PostMapping("/file/set-date")

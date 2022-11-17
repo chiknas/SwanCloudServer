@@ -74,7 +74,11 @@ public class JwtTokenProvider {
         }
 
         // Search jwt cookie for token (this is used in the WEB APP)
-        return Arrays.stream(req.getCookies()).filter(cookie -> JWT_TOKEN_NAME.equals(cookie.getName())).findFirst().map(Cookie::getValue);
+        return Optional.ofNullable(req.getCookies())
+                .map(Arrays::stream)
+                .flatMap(cookies ->
+                        cookies.filter(cookie -> JWT_TOKEN_NAME.equals(cookie.getName())).findFirst().map(Cookie::getValue)
+                );
     }
 
     public boolean validateToken(String token) {

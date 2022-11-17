@@ -1,6 +1,6 @@
 package com.chiknas.swancloudserver.services;
 
-import com.chiknas.swancloudserver.converters.FileMetadataConverter;
+import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
 import com.chiknas.swancloudserver.services.helpers.FilesHelper;
@@ -8,6 +8,7 @@ import com.chiknas.swancloudserver.utils.CustomFileVisitor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Service responsible to re-index the base path the system is currently running on.
@@ -32,12 +34,12 @@ public class IndexingService {
 
     @Value("${files.base-path}")
     private final String filesBasePath = System.getProperty("user.dir");
-    private final FileMetadataConverter fileMetadataConverter;
+    private final ConversionService conversionService;
     private final FileMetadataRepository fileMetadataRepository;
 
     @Autowired
-    public IndexingService(FileMetadataConverter fileMetadataConverter, FileMetadataRepository fileMetadataRepository) {
-        this.fileMetadataConverter = fileMetadataConverter;
+    public IndexingService(ConversionService conversionService, FileMetadataRepository fileMetadataRepository) {
+        this.conversionService = conversionService;
         this.fileMetadataRepository = fileMetadataRepository;
     }
 
@@ -45,10 +47,10 @@ public class IndexingService {
      * Will index the file properties we need in the database. Location, filename, etc..
      * From now on the file is available in the system.
      */
-    public void index(File file) {
+    public Optional<FileMetadataDTO> index(File file) {
         if (file.isFile()) {
             // if the converter can not find the created date, figure out created date from the folder structure.
-            FileMetadataEntity fileMetadata = Objects.requireNonNull(fileMetadataConverter.convert(file));
+            FileMetadataEntity fileMetadata = Objects.requireNonNull(conversionService.convert(file, FileMetadataEntity.class));
             if (fileMetadata.getCreatedDate().equals(LocalDate.EPOCH)) {
                 FilesHelper.getLocalDateFromPath(file)
                         .ifPresentOrElse(
@@ -56,8 +58,10 @@ public class IndexingService {
                                 () -> fileMetadata.setCreatedDate(LocalDate.EPOCH)
                         );
             }
-            fileMetadataRepository.save(fileMetadata);
+
+            return Optional.ofNullable(conversionService.convert(fileMetadataRepository.save(fileMetadata), FileMetadataDTO.class));
         }
+        return Optional.empty();
     }
 
 

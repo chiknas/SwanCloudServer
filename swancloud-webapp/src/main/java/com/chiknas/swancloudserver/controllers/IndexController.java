@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver.controllers;
 
+import com.chiknas.swancloudserver.security.CurrentUser;
 import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,20 +13,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Controller
 public class IndexController {
 
     private final FileService fileService;
+    private final CurrentUser currentUser;
 
     @Autowired
-    public IndexController(FileService fileService) {
+    public IndexController(FileService fileService, CurrentUser currentUser) {
         this.fileService = fileService;
+        this.currentUser = currentUser;
     }
 
     @GetMapping("/")
     public String index(Model model) {
+        currentUser.getLastUploadedFileDate()
+                .ifPresent(lastFileUploadedDate -> model.addAttribute("lastFileUploadedDate", lastFileUploadedDate));
         return "index"; //view
     }
 
@@ -38,7 +46,11 @@ public class IndexController {
 
     @PostMapping("/upload")
     public String uploadFiles(@RequestParam("files") List<MultipartFile> files, RedirectAttributes attributes) {
-        files.forEach(fileService::storeFile);
+        files.stream().map(fileService::storeFile)
+                .filter(Optional::isPresent)
+                .flatMap(fileMetadata -> Stream.of(fileMetadata.get().getCreatedDate()))
+                .max(LocalDate::compareTo)
+                .ifPresent(currentUser::setLastUploadedFileDate);
         return "redirect:/";
     }
 }

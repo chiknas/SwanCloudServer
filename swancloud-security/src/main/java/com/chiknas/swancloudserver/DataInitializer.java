@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -28,6 +29,7 @@ public class DataInitializer implements ApplicationListener<ApplicationReadyEven
         users.deleteAll();
         this.users.save(User.builder()
                 .email("user@gmail.com")
+                .lastUploadedFileDate(LocalDate.of(2020, 12, 12))
                 .password(this.passwordEncoder.encode("password"))
                 .roles(List.of("ROLE_USER"))
                 .build()
