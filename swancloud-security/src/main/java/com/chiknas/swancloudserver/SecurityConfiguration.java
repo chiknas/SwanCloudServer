@@ -123,6 +123,8 @@ public class SecurityConfiguration {
                 .authenticationProvider(authProvider())
                 .apply(new JwtSecurityConfigurerAdapter(jwtTokenProvider))
                 .and()
+                .apply(new BasicAuthSecurityConfigurerAdapter())
+                .and()
                 .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

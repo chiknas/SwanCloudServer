@@ -1,6 +1,7 @@
 package com.chiknas.swancloudserver.filters.basicauth;
 
 import com.chiknas.swancloudserver.entities.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_LOGOUT_URL;
 import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_RESET_PASSWORD_URL;
 
 /**
@@ -25,21 +27,33 @@ public class PasswordExpirationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
         String currentUrl = ((HttpServletRequest) request).getRequestURL().toString();
-        if (!isStaticContent(currentUrl)) {
-            Optional<User> loggedInUser = getLoggedInUser();
-            loggedInUser.filter(User::isPasswordExpired)
-                    .ifPresent(user -> resetPassword(request, response));
-            loggedInUser.filter(user -> !user.isPasswordExpired() && isCurrentPathResetPassword(request))
-                    // Only allow access to the reset password page if the password of the user is expired.
-                    // This will lock down access to resetting the password.
-                    .ifPresent(user -> redirect("/", response));
+        Optional<User> loggedInUser = getLoggedInUser();
+        if (!isStaticContent(currentUrl) && loggedInUser.isPresent()) {
+            User user = loggedInUser.get();
 
+            // Dont allow access to the api until the user changes his password through the webapp
+            if (isApiRequest(currentUrl) && user.isPasswordExpired()) {
+                forbidden(response);
+            }
+            // Send user to the reset password page if the password is expired
+            else if (!isCurrentPathResetPassword(request) && user.isPasswordExpired()) {
+                redirect(WEBAPP_RESET_PASSWORD_URL, response);
+            }
+            // Lock down the reset password page, only to be used by users with expired password
+            else if (isCurrentPathResetPassword(request) && !user.isPasswordExpired()) {
+                redirect("/", response);
+            }
         }
+
         continueChain(request, response, chain);
     }
 
     private boolean isStaticContent(String currentUrl) {
-        return currentUrl.contains("/img/") || currentUrl.contains("/css/");
+        return currentUrl.contains("/img/") || currentUrl.contains("/css/") || currentUrl.contains(WEBAPP_LOGOUT_URL);
+    }
+
+    private boolean isApiRequest(String currentUrl) {
+        return currentUrl.contains("/api/");
     }
 
     private Optional<User> getLoggedInUser() {
@@ -55,19 +69,20 @@ public class PasswordExpirationFilter extends GenericFilterBean {
     }
 
 
-    private void resetPassword(ServletRequest request, ServletResponse response) {
-        // Don't redirect to the reset password page we are already there.
-        if (isCurrentPathResetPassword(request)) {
-            return;
-        }
-
-        redirect(WEBAPP_RESET_PASSWORD_URL, response);
-    }
-
     private void redirect(String path, ServletResponse response) {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         try {
             httpResponse.sendRedirect(path);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void forbidden(ServletResponse response) {
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        try {
+            SecurityContextHolder.getContext().setAuthentication(null);
+            httpResponse.setStatus(HttpStatus.FORBIDDEN.value());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_LOGIN_URL;
@@ -50,18 +51,22 @@ public class AuthenticationController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        return Optional.ofNullable(authenticate(loginRequest))
+                .map(authentication -> {
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Authentication authentication = authenticationManager
+                    User user = (User) authentication.getPrincipal();
+
+                    String accessToken = jwtTokenProvider.createToken(user);
+                    RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+                    return ResponseEntity.ok(new JwtResponse(accessToken, refreshToken.getToken(), user.getId(), user));
+                }).orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    private Authentication authenticate(LoginRequest loginRequest) {
+        return authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        User user = (User) authentication.getPrincipal();
-
-        String accessToken = jwtTokenProvider.createToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
-
-        return ResponseEntity.ok(new JwtResponse(accessToken, refreshToken.getToken(), user.getId(), user));
     }
 
     @PostMapping("/refreshtoken")
@@ -79,20 +84,27 @@ public class AuthenticationController {
     }
 
     @PostMapping(value = "/resetpassword", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
-    public ResponseEntity<?> resetPassword(@RequestBody MultiValueMap<String, String> paramMap) {
+    public ResponseEntity<?> resetPassword(@RequestBody MultiValueMap<String, String> paramMap, HttpSession session) {
         PasswordResetRequest passwordResetRequest = new PasswordResetRequest();
         passwordResetRequest.setOldPassword(paramMap.get("oldPassword").get(0));
         passwordResetRequest.setNewPassword(paramMap.get("newPassword").get(0));
 
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(authentication -> resetPassword(authentication, passwordResetRequest))
+                .map(authentication -> resetPassword(authentication, passwordResetRequest, session))
                 .orElseThrow(() -> new RuntimeException("No authenticated user found!"));
     }
 
 
-    private ResponseEntity<?> resetPassword(Authentication authentication, PasswordResetRequest request) {
+    private ResponseEntity<?> resetPassword(Authentication authentication, PasswordResetRequest request, HttpSession session) {
         User user = (User) authentication.getPrincipal();
         return userService.changePassword(user, request).map(updatedUser -> {
+
+                    // Kick user out, so he can log in with the new password
+                    SecurityContextHolder.clearContext();
+                    if (session != null) {
+                        session.invalidate();
+                    }
+
                     HttpHeaders headers = new HttpHeaders();
                     headers.add("Location", WEBAPP_LOGIN_URL);
                     return new ResponseEntity<String>(headers, HttpStatus.TEMPORARY_REDIRECT);
