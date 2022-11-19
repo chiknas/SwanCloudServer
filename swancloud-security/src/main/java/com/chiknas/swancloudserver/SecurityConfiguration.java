@@ -51,11 +51,10 @@ public class SecurityConfiguration {
     @Bean
     @Order(3)
     public SecurityFilterChain webAppFilterChain(HttpSecurity http) throws Exception {
-        return http
+        return withHttpSecurity(http)
                 .antMatcher("/**")
+                .httpBasic().disable()
                 .csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
-                .and()
-                .apply(new BasicAuthSecurityConfigurerAdapter())
                 .and()
                 .authorizeRequests()
                 .antMatchers(WEBAPP_LOGIN_URL, "/img/**", "/css/**", "/access-denied")
@@ -118,13 +117,20 @@ public class SecurityConfiguration {
     /**
      * Http security configuration for every single HTTP endpoint in the system.
      */
-    private HttpSecurity withRestApiSecurity(HttpSecurity http) throws Exception {
+    private HttpSecurity withHttpSecurity(HttpSecurity http) throws Exception {
         return http
+                .httpBasic().disable()
                 .authenticationProvider(authProvider())
                 .apply(new JwtSecurityConfigurerAdapter(jwtTokenProvider))
                 .and()
-                .apply(new BasicAuthSecurityConfigurerAdapter())
-                .and()
+                .apply(new BasicAuthSecurityConfigurerAdapter()).and();
+    }
+
+    /**
+     * Http security configuration for every single REST endpoint in the system.
+     */
+    private HttpSecurity withRestApiSecurity(HttpSecurity http) throws Exception {
+        return withHttpSecurity(http)
                 .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
