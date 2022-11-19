@@ -28,7 +28,7 @@ public class CurrentUserService implements CurrentUser {
     @Override
     public void setLastUploadedFileDate(LocalDate localDate) {
         getCurrentUser().ifPresent(user -> {
-            if (localDate.isAfter(user.getLastUploadedFileDate())) {
+            if (user.getLastUploadedFileDate() == null || localDate.isAfter(user.getLastUploadedFileDate())) {
                 user.setLastUploadedFileDate(localDate);
                 userRepository.save(user);
             }

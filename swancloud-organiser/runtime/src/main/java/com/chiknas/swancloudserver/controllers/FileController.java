@@ -32,7 +32,7 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public void handleFileUpload(@RequestPart("data") List<MultipartFile> files) {
+    public void handleFileUpload(@RequestPart("files") List<MultipartFile> files) {
         files.stream().map(fileService::storeFile)
                 .filter(Optional::isPresent)
                 .flatMap(fileMetadata -> Stream.of(fileMetadata.get().getCreatedDate()))
