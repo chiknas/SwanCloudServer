@@ -44,20 +44,21 @@ filesInput.addEventListener("change", () => {
  * @param {*} id the id of the image as returned from the server
  */
 const addImage = (id) => {
+  const imageContainer = document.createElement("li");
+
+  const img = document.createElement("img");
+  img.classList.add("galleryImage");
+  img.onclick = () => {
+    window.location.href = `/preview/${id}`;
+  };
+
+  imageContainer.appendChild(img);
+  galleryContainer.appendChild(imageContainer);
+
   fetch(`/api/files/thumbnail/${id}`)
     .then((res) => res.blob())
     .then((response) => {
-      const imageContainer = document.createElement("li");
-
-      const img = document.createElement("img");
       img.src = URL.createObjectURL(response);
-      img.classList.add("galleryImage");
-      img.onclick = () => {
-        window.location.href = `/preview/${id}`;
-      };
-
-      imageContainer.appendChild(img);
-      galleryContainer.appendChild(imageContainer);
     });
 };
 

@@ -90,7 +90,7 @@ public class FileServiceImpl implements FileService {
 
         return fileMetadataRepository.findAll(
                         specification,
-                        new OffsetPagedRequest(limit, offset, Sort.by(Sort.Direction.DESC, "createdDate"))
+                        new OffsetPagedRequest(limit, offset, Sort.by(Sort.Direction.DESC, "createdDate", "id"))
                 )
                 .stream()
                 .map(fileMetadata -> conversionService.convert(fileMetadata, FileMetadataDTO.class))
