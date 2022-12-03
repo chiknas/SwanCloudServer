@@ -11,31 +11,58 @@
     <link rel="stylesheet" th:href="@{/css/index/filter.css}" />
     <link rel="stylesheet" th:href="@{/css/index/gallery.css}" />
     <link rel="stylesheet" th:href="@{/css/index/upload_popup.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/sidenav.css}" />
   </head>
   <body>
     <div class="page-container">
-      <div class="header">
+      <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
+          >&times;</a
+        >
+        <img
+          th:src="@{'data:image/jpeg;base64,'+${qrcode}}"
+          class="sidenav-item"
+        />
+        <div class="sidenav-item">
+          <p>Last upload:</p>
+          <p th:text="${lastFileUploadedDate}"></p>
+        </div>
+
         <form id="upload-form">
-          <label for="files" id="filesInputLabel">
-            <img
-              id="upload-image"
-              class="header-icon"
-              th:src="@{/img/icons/upload.svg}"
-            />
-            <input id="files" type="file" name="files" multiple />
-          </label>
+          <div class="sidenav-item">
+            <label for="files" id="filesInputLabel">
+              <img
+                id="upload-image"
+                class="header-icon"
+                src="/img/icons/upload.svg"
+              />
+            </label>
+            <p>Upload Images</p>
+            <input id="files" type="file" name="files" multiple="" />
+          </div>
         </form>
         <form method="post" th:action="@{/logout}">
-          <button id="logout-button" type="submit">
-            <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
-          </button>
+          <div class="sidenav-item">
+            <button id="logout-button" type="submit">
+              <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
+            </button>
+            <p>Logout</p>
+          </div>
         </form>
-        <p th:text="${lastFileUploadedDate}"></p>
       </div>
+
+      <div class="header">
+        <span style="font-size: 30px; cursor: pointer" onclick="openNav()"
+          >&#9776;</span
+        >
+      </div>
+
       <div class="filters">
         <input type="date" name="date" id="beforeDate" />
       </div>
+
       <ul class="gallery" id="gallery-container"></ul>
+
       <div id="upload-popup" class="overlay">
         <div class="popup">
           <h2 id="upload-popup-title">Uploading files...</h2>

@@ -12,6 +12,18 @@ const throttle = (callback, time) => {
   }, time);
 };
 
+function openNav() {
+  document.getElementById("mySidenav").style.width = "250px";
+  document.getElementById("mySidenav").style["padding-left"] = "1em";
+  document.getElementById("mySidenav").style["padding-right"] = "1em";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+  document.getElementById("mySidenav").style["padding-left"] = "0";
+  document.getElementById("mySidenav").style["padding-right"] = "0";
+}
+
 // How many items to load per request
 const limit = 100;
 // Skip so many items to load the next page

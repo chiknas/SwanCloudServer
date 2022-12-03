@@ -1,10 +1,10 @@
 .header {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: left;
   padding: 2em;
   gap: 1em;
-  background-color: #26068f;
+  background-color: #000000;
   align-items: center;
 }
 
