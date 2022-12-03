@@ -16,6 +16,8 @@ public class QRSyncResponse {
     private String baseServerUrl;
     private String refreshToken;
     private String email;
+    // Epoch seconds timestamp when the refresh token expires.
+    private long expiryTime;
 
 
 }

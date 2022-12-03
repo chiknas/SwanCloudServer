@@ -51,6 +51,7 @@ public class CurrentUserService implements CurrentUser {
                     .email(user.getEmail())
                     .baseServerUrl(baseServerUri)
                     .refreshToken(refreshToken.getToken())
+                    .expiryTime(refreshToken.getExpiryDate().getEpochSecond())
                     .build();
             try {
                 String serializedQRSyncResponse = new ObjectMapper().writeValueAsString(qrSyncResponse);

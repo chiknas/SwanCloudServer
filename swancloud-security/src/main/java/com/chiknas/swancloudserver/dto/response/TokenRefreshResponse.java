@@ -8,13 +8,14 @@ import lombok.Setter;
 @Setter
 public class TokenRefreshResponse {
     private String accessToken;
-    private String refreshToken;
+    // Epoch time in seconds of the time the accessToken expires.
+    private long accessTokenExpiry;
 
     @Setter(AccessLevel.NONE)
     private String tokenType = "Bearer";
 
-    public TokenRefreshResponse(String accessToken, String refreshToken) {
+    public TokenRefreshResponse(String accessToken, long refreshToken) {
         this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+        this.accessTokenExpiry = refreshToken;
     }
 }

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Optional;
 
 import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_LOGIN_URL;
@@ -80,7 +81,8 @@ public class AuthenticationController {
                 .map(RefreshToken::getUser)
                 .map(user -> {
                     String token = jwtTokenProvider.createToken(user);
-                    return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
+                    Date tokenExpirationDate = jwtTokenProvider.getTokenExpiration(token);
+                    return ResponseEntity.ok(new TokenRefreshResponse(token, tokenExpirationDate.toInstant().getEpochSecond()));
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
     }
