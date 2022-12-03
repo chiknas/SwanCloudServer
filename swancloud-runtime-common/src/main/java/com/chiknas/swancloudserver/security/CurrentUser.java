@@ -24,4 +24,11 @@ public interface CurrentUser {
      * to overwrite it.
      */
     void setLastUploadedFileDate(LocalDate localDate);
+
+
+    /**
+     * Returns a Base64 string that represents a QR code image that holds information that allows
+     * the user to be synced up to other apps.
+     */
+    Optional<String> getSyncUserQR();
 }
