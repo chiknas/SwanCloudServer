@@ -25,8 +25,6 @@ public class IndexController {
     public String index(Model model) {
         currentUser.getLastUploadedFileDate()
                 .ifPresent(lastFileUploadedDate -> model.addAttribute("lastFileUploadedDate", lastFileUploadedDate));
-        currentUser.getSyncUserQR()
-                .ifPresent(qrcode -> model.addAttribute("qrcode", qrcode));
         return "index"; //view
     }
 

@@ -108,7 +108,7 @@ public class SecurityConfiguration {
         return withRestApiSecurity(http)
                 .antMatcher("/auth/**")
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/auth/signin")
+                .antMatchers(HttpMethod.POST, "/auth/signin", "/auth/refreshtoken")
                 .permitAll()
                 .anyRequest().authenticated()
                 .and().build();
