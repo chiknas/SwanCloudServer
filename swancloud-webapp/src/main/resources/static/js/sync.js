@@ -10,7 +10,7 @@ function generateQrCode() {
 
   sideNav.insertBefore(qrcode, lastUpload);
 
-  fetch(`/auth/syncqr`)
+  fetch(`/api/syncqr`)
     .then((res) => res.blob())
     .then((response) => {
       qrcode.src = URL.createObjectURL(response);
