@@ -20,7 +20,7 @@ public class FileMetadataConverter implements Converter<File, FileMetadataEntity
         fileMetadataEntity.setFileName(file.getName());
         fileMetadataEntity.setPath(file.getAbsolutePath());
         FilesHelper.getCreationDate(file).ifPresentOrElse(fileMetadataEntity::setCreatedDate,
-                () -> fileMetadataEntity.setCreatedDate(LocalDate.EPOCH));
+                () -> fileMetadataEntity.setCreatedDate(LocalDate.EPOCH.atStartOfDay()));
 
         return fileMetadataEntity;
     }

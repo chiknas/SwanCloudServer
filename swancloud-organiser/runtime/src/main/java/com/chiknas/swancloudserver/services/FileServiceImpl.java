@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -119,10 +120,10 @@ public class FileServiceImpl implements FileService {
 
 
     public void moveFile(File file, Path path) {
-        moveFile(file, path, LocalDate.EPOCH);
+        moveFile(file, path, LocalDate.EPOCH.atStartOfDay());
     }
 
-    public void moveFile(Integer fileId, Path path, LocalDate createdDate) {
+    public void moveFile(Integer fileId, Path path, LocalDateTime createdDate) {
         fileMetadataRepository.findById(fileId)
                 .ifPresent(fileMetadata -> moveFile(new File(fileMetadata.getPath()), path, createdDate));
     }
@@ -132,7 +133,7 @@ public class FileServiceImpl implements FileService {
      * The system will try to figure out the file creation date from the file metadata. if this is already known,
      * pass the createdDate. It will also try to update the thumbnail if possible.
      */
-    public void moveFile(File file, Path path, LocalDate createdDate) {
+    public void moveFile(File file, Path path, LocalDateTime createdDate) {
         try {
             File moveLocation = new File(path + "/" + file.getName());
             Files.move(file.toPath(), moveLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);

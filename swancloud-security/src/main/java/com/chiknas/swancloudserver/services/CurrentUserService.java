@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -28,12 +28,12 @@ public class CurrentUserService implements CurrentUser {
     }
 
     @Override
-    public Optional<LocalDate> getLastUploadedFileDate() {
+    public Optional<LocalDateTime> getLastUploadedFileDate() {
         return getCurrentUser().map(User::getLastUploadedFileDate);
     }
 
     @Override
-    public void setLastUploadedFileDate(LocalDate localDate) {
+    public void setLastUploadedFileDate(LocalDateTime localDate) {
         getCurrentUser().ifPresent(user -> {
             if (user.getLastUploadedFileDate() == null || localDate.isAfter(user.getLastUploadedFileDate())) {
                 user.setLastUploadedFileDate(localDate);

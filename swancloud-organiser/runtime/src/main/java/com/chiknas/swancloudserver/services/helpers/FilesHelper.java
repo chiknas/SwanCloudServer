@@ -15,8 +15,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Month;
+import java.time.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -37,7 +36,7 @@ public class FilesHelper {
      * @param file - the file in the system you are interested in.
      * @return optional date because the metadata might not be present in the file.
      */
-    public static Optional<LocalDate> getCreationDate(File file) {
+    public static Optional<LocalDateTime> getCreationDate(File file) {
         try {
             Metadata metadata = ImageMetadataReader.readMetadata(file);
 
@@ -54,7 +53,7 @@ public class FilesHelper {
             }
 
             if (result != null) {
-                return Optional.of(new java.sql.Date(result.getTime()).toLocalDate());
+                return Optional.of(Instant.ofEpochMilli(result.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime());
             }
         } catch (ImageProcessingException | IOException e) {
             log.error(e.getMessage().concat(file.getName()), e);
@@ -137,7 +136,7 @@ public class FilesHelper {
 
     }
 
-    public static Optional<LocalDate> getLocalDateFromPath(File file) {
+    public static Optional<LocalDateTime> getLocalDateFromPath(File file) {
         String path = file.getAbsolutePath();
         Optional<Month> fileInMonth = Arrays.stream(Month.values())
                 .filter(month -> path.toLowerCase().contains(month.toString().toLowerCase()))
@@ -147,7 +146,7 @@ public class FilesHelper {
             int indexOfMonth = path.toLowerCase().indexOf(month.toString().toLowerCase());
             String yearString = path.substring(indexOfMonth - 5, indexOfMonth - 1);
             try {
-                return Optional.of(LocalDate.of(Integer.parseInt(yearString), month, 1));
+                return Optional.of(LocalDate.of(Integer.parseInt(yearString), month, 1).atStartOfDay());
             } catch (NumberFormatException e) {
                 log.error(String.format("Failed to get date from the current path: %s", path), e);
             }

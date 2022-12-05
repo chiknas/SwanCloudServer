@@ -4,6 +4,7 @@ import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class FileMetadataSpecification {
 
@@ -19,13 +20,13 @@ public class FileMetadataSpecification {
         if (uncategorized == null) {
             return Specification.where(null);
         }
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdDate"), LocalDate.parse("1970-01-01"));
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("createdDate"), LocalDate.parse("1970-01-01").atStartOfDay());
     }
 
     /**
      * Created date of the file must be on or before the specified date.
      */
-    public static Specification<FileMetadataEntity> forBeforeDate(LocalDate beforeDate) {
+    public static Specification<FileMetadataEntity> forBeforeDate(LocalDateTime beforeDate) {
         if (beforeDate == null) {
             return Specification.where(null);
         }

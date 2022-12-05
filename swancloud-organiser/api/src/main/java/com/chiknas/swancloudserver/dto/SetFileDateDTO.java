@@ -3,7 +3,7 @@ package com.chiknas.swancloudserver.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO to be used to update a file's creation date.
@@ -19,5 +19,5 @@ public class SetFileDateDTO {
     private Integer fileId;
 
     // the new creation date for the specified file
-    private LocalDate creationDate;
+    private LocalDateTime creationDate;
 }

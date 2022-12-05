@@ -51,11 +51,11 @@ public class IndexingService {
         if (file.isFile()) {
             // if the converter can not find the created date, figure out created date from the folder structure.
             FileMetadataEntity fileMetadata = Objects.requireNonNull(conversionService.convert(file, FileMetadataEntity.class));
-            if (fileMetadata.getCreatedDate().equals(LocalDate.EPOCH)) {
+            if (fileMetadata.getCreatedDate().equals(LocalDate.EPOCH.atStartOfDay())) {
                 FilesHelper.getLocalDateFromPath(file)
                         .ifPresentOrElse(
                                 fileMetadata::setCreatedDate,
-                                () -> fileMetadata.setCreatedDate(LocalDate.EPOCH)
+                                () -> fileMetadata.setCreatedDate(LocalDate.EPOCH.atStartOfDay())
                         );
             }
 

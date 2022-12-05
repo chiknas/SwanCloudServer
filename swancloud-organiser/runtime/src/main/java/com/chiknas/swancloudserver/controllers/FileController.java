@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -36,7 +37,7 @@ public class FileController {
         files.stream().map(fileService::storeFile)
                 .filter(Optional::isPresent)
                 .flatMap(fileMetadata -> Stream.of(fileMetadata.get().getCreatedDate()))
-                .max(LocalDate::compareTo)
+                .max(LocalDateTime::compareTo)
                 .ifPresent(currentUser::setLastUploadedFileDate);
     }
 
@@ -55,7 +56,8 @@ public class FileController {
     ) {
         FileMetadataFilter fileMetadataFilter = new FileMetadataFilter();
         Optional.ofNullable(uncategorized).ifPresent(fileMetadataFilter::setUncategorized);
-        Optional.ofNullable(beforeDate).ifPresent(fileMetadataFilter::setBeforeDate);
+        // Set current day included: time to be midnight so we get all files in the current day
+        Optional.ofNullable(beforeDate).map(date -> date.plusDays(1).atStartOfDay()).ifPresent(fileMetadataFilter::setBeforeDate);
         return fileService.findAllFilesMetadata(limit, offset, fileMetadataFilter);
     }
 

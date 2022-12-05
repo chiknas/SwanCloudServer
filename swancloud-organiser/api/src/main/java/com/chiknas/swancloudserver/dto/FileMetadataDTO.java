@@ -1,6 +1,6 @@
 package com.chiknas.swancloudserver.dto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Data transfer object for file metadata
@@ -14,5 +14,5 @@ public interface FileMetadataDTO {
 
     String getFileName();
 
-    LocalDate getCreatedDate();
+    LocalDateTime getCreatedDate();
 }

@@ -27,7 +27,7 @@ public class CurrentUserController {
     public CurrentUserResponse getCurrentUserDetails() {
         CurrentUserResponse currentUserResponse = new CurrentUserResponse();
         currentUserResponse.setLastUploadedFileDate(
-                currentUser.getLastUploadedFileDate().orElse(LocalDate.EPOCH)
+                currentUser.getLastUploadedFileDate().orElse(LocalDate.EPOCH.atStartOfDay())
         );
         return currentUserResponse;
     }

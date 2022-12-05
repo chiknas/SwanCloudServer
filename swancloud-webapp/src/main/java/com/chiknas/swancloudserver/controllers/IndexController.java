@@ -24,7 +24,7 @@ public class IndexController {
     @GetMapping("/")
     public String index(Model model) {
         currentUser.getLastUploadedFileDate()
-                .ifPresent(lastFileUploadedDate -> model.addAttribute("lastFileUploadedDate", lastFileUploadedDate));
+                .ifPresent(lastFileUploadedDate -> model.addAttribute("lastFileUploadedDate", lastFileUploadedDate.toLocalDate()));
         return "index"; //view
     }
 

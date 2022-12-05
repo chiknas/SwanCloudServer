@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -49,7 +49,7 @@ public class FileOrganiserService {
     /**
      * Re-categorizes a file based the passed in date.
      */
-    public void reCategorizeFile(Integer fileId, LocalDate creationDate) {
+    public void reCategorizeFile(Integer fileId, LocalDateTime creationDate) {
         fileService.moveFile(fileId, createPathFromDate(creationDate), creationDate);
     }
 
@@ -68,7 +68,7 @@ public class FileOrganiserService {
      * Organises the file to the correct folder by date. If date is not available it organises the file to generic uncategorized folder for manual categorization.
      */
     private void processFile(File file) {
-        Optional<LocalDate> creationDate = getCreationDate(file);
+        Optional<LocalDateTime> creationDate = getCreationDate(file);
         creationDate.ifPresentOrElse(date -> fileService.moveFile(file, createPathFromDate(date), date),
                 () -> {
                     File uncategorizedDir = new File(filesBasePath + "/uncategorized");
@@ -77,7 +77,7 @@ public class FileOrganiserService {
                 });
     }
 
-    private Path createPathFromDate(LocalDate date) {
+    private Path createPathFromDate(LocalDateTime date) {
         File yearDir = new File(filesBasePath + "/" + date.getYear() + "/" + date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
         yearDir.mkdirs();
         return yearDir.toPath();

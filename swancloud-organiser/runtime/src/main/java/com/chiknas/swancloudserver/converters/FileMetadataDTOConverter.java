@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * @author nkukn
@@ -30,7 +30,7 @@ public class FileMetadataDTOConverter implements Converter<FileMetadataEntity, F
             }
 
             @Override
-            public LocalDate getCreatedDate() {
+            public LocalDateTime getCreatedDate() {
                 return source.getCreatedDate();
             }
         };

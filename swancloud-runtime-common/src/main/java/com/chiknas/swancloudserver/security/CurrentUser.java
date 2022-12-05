@@ -1,6 +1,6 @@
 package com.chiknas.swancloudserver.security;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -15,7 +15,7 @@ public interface CurrentUser {
      * 2020/12/12 until there is a file uploaded that is created after that.
      * This is used as info for the user to gauge the last file he uploaded.
      */
-    Optional<LocalDate> getLastUploadedFileDate();
+    Optional<LocalDateTime> getLastUploadedFileDate();
 
     /**
      * Updates the last uploaded file date with the specified value.
@@ -23,7 +23,7 @@ public interface CurrentUser {
      * This is a hard set, meaning will not allow dates in the past (before the current set date)
      * to overwrite it.
      */
-    void setLastUploadedFileDate(LocalDate localDate);
+    void setLastUploadedFileDate(LocalDateTime localDate);
 
 
     /**
