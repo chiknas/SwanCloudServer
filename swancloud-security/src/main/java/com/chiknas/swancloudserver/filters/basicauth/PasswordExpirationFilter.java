@@ -48,8 +48,14 @@ public class PasswordExpirationFilter extends GenericFilterBean {
         continueChain(request, response, chain);
     }
 
+
+    /**
+     * Allow any resources needed for the user to reset his password.
+     */
     private boolean isStaticContent(String currentUrl) {
-        return currentUrl.contains("/img/") || currentUrl.contains("/css/") || currentUrl.contains(WEBAPP_LOGOUT_URL);
+        return currentUrl.contains("/img/") || currentUrl.contains("/css/") ||
+                currentUrl.contains(WEBAPP_LOGOUT_URL) ||
+                currentUrl.contains("/js/reset_password.js") || currentUrl.contains("/js/refresh_token_interceptor.js");
     }
 
     private boolean isApiRequest(String currentUrl) {

@@ -1,6 +1,7 @@
 const csrfField = document.getElementsByName("_csrf")[0];
-const usernameField = document.getElementById("username");
-const passwordField = document.getElementById("password");
+const oldPasswordField = document.getElementById("old-password");
+const newPasswordField = document.getElementById("new-password");
+const repeatPasswordField = document.getElementById("repeat-password");
 const submitButton = document.getElementById("submitButton");
 
 const triggerSubmit = (event) => {
@@ -11,14 +12,15 @@ const triggerSubmit = (event) => {
 };
 
 // Login on enter press
-usernameField.addEventListener("keypress", triggerSubmit);
-passwordField.addEventListener("keypress", triggerSubmit);
+oldPasswordField.addEventListener("keypress", triggerSubmit);
+newPasswordField.addEventListener("keypress", triggerSubmit);
+repeatPasswordField.addEventListener("keypress", triggerSubmit);
 
-function login() {
+function resetPassword() {
   const loginRequest = {
     _csrf: csrfField.value,
-    username: usernameField.value,
-    password: passwordField.value,
+    oldPassword: oldPasswordField.value,
+    newPassword: newPasswordField.value,
   };
 
   const formBody = Object.keys(loginRequest)
@@ -28,7 +30,7 @@ function login() {
     )
     .join("&");
 
-  fetch("/login", {
+  fetch("/auth/resetpassword", {
     method: "POST",
     body: formBody,
     credentials: "same-origin",
