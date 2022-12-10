@@ -1,6 +1,18 @@
 const csrfField = document.getElementsByName("_csrf")[0];
 const usernameField = document.getElementById("username");
 const passwordField = document.getElementById("password");
+const submitButton = document.getElementById("submitButton");
+
+const triggerSubmit = (event) => {
+  if (event.keyCode === 13) {
+    event.preventDefault();
+    submitButton.click();
+  }
+};
+
+// Login on enter press
+usernameField.addEventListener("keypress", triggerSubmit);
+passwordField.addEventListener("keypress", triggerSubmit);
 
 function login() {
   const loginRequest = {
