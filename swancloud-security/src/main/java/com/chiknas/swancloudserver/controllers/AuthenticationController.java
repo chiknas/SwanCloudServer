@@ -57,7 +57,7 @@ public class AuthenticationController {
                     User user = (User) authentication.getPrincipal();
 
                     String accessToken = jwtTokenProvider.createToken(user);
-                    RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+                    RefreshToken refreshToken = refreshTokenService.createRefreshTokenApi(user);
 
                     return ResponseEntity.ok(new JwtResponse(accessToken, refreshToken.getToken(), user.getId(), user));
                 }).orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());

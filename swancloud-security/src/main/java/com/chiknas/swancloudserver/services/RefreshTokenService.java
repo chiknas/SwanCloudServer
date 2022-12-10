@@ -18,8 +18,11 @@ import java.util.UUID;
 
 @Service
 public class RefreshTokenService {
-    @Value("${security.jwt.refresh-token.expire-length}")
-    private Long refreshTokenDurationMs;
+    @Value("${security.jwt.refresh-token-web.expire-length}")
+    private Long refreshTokenWebMillis;
+
+    @Value("${security.jwt.refresh-token-api.expire-length}")
+    private Long refreshTokenApiMillis;
 
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -35,11 +38,19 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
-    public RefreshToken createRefreshToken(User user) {
+    public RefreshToken createRefreshTokenWeb(User user) {
+        return createRefreshToken(user, refreshTokenWebMillis);
+    }
+
+    public RefreshToken createRefreshTokenApi(User user) {
+        return createRefreshToken(user, refreshTokenApiMillis);
+    }
+
+    private RefreshToken createRefreshToken(User user, Long ttl) {
         RefreshToken refreshToken = new RefreshToken();
 
         refreshToken.setUser(user);
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+        refreshToken.setExpiryDate(Instant.now().plusMillis(ttl));
         refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshTokenRepository.save(refreshToken);
@@ -59,7 +70,8 @@ public class RefreshTokenService {
         return userRepository.findById(userId).map(refreshTokenRepository::deleteByUser).orElse(0);
     }
 
-    @Scheduled(cron = "0 0 6 * * *")
+    // Delete unused tokens once a day
+    @Scheduled(fixedRate = 86400000)
     public void cleanupRefreshTokens() {
         refreshTokenRepository.deleteAll(refreshTokenRepository.findAll(RefreshTokenSpecification.isExpired()));
     }

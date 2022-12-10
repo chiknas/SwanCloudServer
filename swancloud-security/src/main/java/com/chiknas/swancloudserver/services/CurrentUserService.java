@@ -46,7 +46,7 @@ public class CurrentUserService implements CurrentUser {
     public Optional<String> getSyncUserQR() {
         return getCurrentUser().flatMap(user -> {
             String baseServerUri = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            RefreshToken refreshToken = refreshTokenService.createRefreshTokenApi(user);
             QRSyncResponse qrSyncResponse = QRSyncResponse.builder()
                     .email(user.getEmail())
                     .baseServerUrl(baseServerUri)

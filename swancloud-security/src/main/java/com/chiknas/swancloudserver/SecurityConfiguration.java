@@ -87,7 +87,7 @@ public class SecurityConfiguration {
         return (request, response, authentication) -> {
             User user = (User) authentication.getPrincipal();
 
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            RefreshToken refreshToken = refreshTokenService.createRefreshTokenWeb(user);
             Cookie refreshTokenCookie = new Cookie(JWT_REFRESH_TOKEN_NAME, refreshToken.getToken());
             refreshTokenCookie.setHttpOnly(true);
             refreshTokenCookie.setSecure(SSL_ENABLED);
