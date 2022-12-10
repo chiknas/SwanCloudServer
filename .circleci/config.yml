@@ -52,7 +52,7 @@ jobs:
       - run: |
           IMAGE_NAME=$DOCKER_USER/swancloud
           TAG=latest
-          docker build -t $IMAGE_NAME:$TAG .
+          docker build -t $IMAGE_NAME:$TAG -f swancloud-application/Dockerfile .
           echo $DOCKER_PASS | docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
 
@@ -74,7 +74,7 @@ jobs:
       - run: |
           IMAGE_NAME=$DOCKER_USER/swancloud
           TAG=arm32v7
-          docker build -t $IMAGE_NAME:$TAG -f Dockerfile.armhf .
+          docker build -t $IMAGE_NAME:$TAG -f swancloud-application/Dockerfile.armhf .
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push $IMAGE_NAME:$TAG
 

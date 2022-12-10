@@ -27,21 +27,14 @@ Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html
 
 ### <ins>Security('production' only)</ins>
 
-1. GMAIL_ADMIN_ACCOUNTS = Comma separated list of gmail accounts that have access to this system. Everyone else is
+1. ADMIN_EMAILS = Comma separated list of gmail accounts that have access to this system. Everyone else is
    kicked out.
-   Security is handled with OAuth2 and Google.
 
-2. OAUTH2_CLIENT_ID = Client ID taken from https://console.cloud.google.com/apis/credentials you have setup for your
-   app.
+2. server.ssl.key-store = the path where the keystore is located. only PKCS12 key-stores are allowed.
 
-3. OAUTH2_CLIENT_SECRET = Client Secret taken from https://console.cloud.google.com/apis/credentials you have setup for
-   your app.
+3. server.ssl.key-alias = the alias of the key to look for in your certificate
 
-4. server.ssl.key-store = the path where the keystore is located. only PKCS12 key-stores are allowed.
-
-5. server.ssl.key-alias = the alias of the key to look for in your certificate
-
-6. server.ssl.key-store-password = the password used to generate the keystore
+4. server.ssl.key-store-password = the password used to generate the keystore
 
 ## Useful commands
 
