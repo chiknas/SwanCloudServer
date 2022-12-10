@@ -59,4 +59,48 @@ public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileS
                 .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T13:31:58")))
                 .andReturn();
     }
+
+
+    /**
+     * Tests that an upload of a file that already exists will return the existing file in the system.
+     * This should be determined by the file name.
+     */
+    @Test
+    void uploadAndViewDuplicatedFile() throws Exception {
+
+        // Setup a test image as multipart file to upload
+        MockMultipartFile firstFile = new MockMultipartFile(
+                "files", "test_image.jpg",
+                MediaType.MULTIPART_FORM_DATA_VALUE,
+                new FileInputStream(getTestResource("test_image.jpg").toFile()));
+
+        // Hit the endpoint to upload the image
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .multipart("/api/upload")
+                        .file(firstFile)
+        ).andExpect(status().isOk()).andReturn();
+
+        // Hit the endpoint again with the same image
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .multipart("/api/upload")
+                        .file(firstFile)
+        ).andExpect(status().isOk()).andReturn();
+
+        // Hit endpoint to get a list of files. set limit to 2 and make sure
+        // only a single file is returned.
+        mockMvc
+                .perform(
+                        get("/api/files?limit=2&offset=0")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fileName", is("test_image.jpg")))
+                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T13:31:58")))
+                .andReturn();
+    }
 }

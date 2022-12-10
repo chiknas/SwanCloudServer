@@ -59,6 +59,11 @@ public class FileServiceImpl implements FileService {
         // Normalize file name
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
+        Optional<FileMetadataEntity> storedFile = fileMetadataRepository.findByFileName(fileName);
+        if (storedFile.isPresent()) {
+            return storedFile.map(f -> conversionService.convert(f, FileMetadataDTO.class));
+        }
+
         try {
             // Check if the file's name contains invalid characters
             if (fileName.contains("..")) {
