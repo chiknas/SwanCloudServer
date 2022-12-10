@@ -10,5 +10,6 @@ jar {
 apply plugin: "java-test-fixtures"
 
 dependencies {
+    implementation project(':swancloud-runtime-common')
     testFixturesApi 'org.springframework.boot:spring-boot-starter-test'
 }

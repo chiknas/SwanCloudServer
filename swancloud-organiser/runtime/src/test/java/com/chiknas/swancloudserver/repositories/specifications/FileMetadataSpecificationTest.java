@@ -39,6 +39,6 @@ class FileMetadataSpecificationTest {
 
         // Then the created date is checked that is the first epoch date
         Path<Object> createdDate = root.get("createdDate");
-        verify(criteriaBuilder, times(1)).equal(eq(createdDate), eq(LocalDate.parse("1970-01-01")));
+        verify(criteriaBuilder, times(1)).equal(eq(createdDate), eq(LocalDate.parse("1970-01-01").atStartOfDay()));
     }
 }

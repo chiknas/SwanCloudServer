@@ -34,7 +34,7 @@ public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileS
 
         // Setup a test image as multipart file to upload
         MockMultipartFile firstFile = new MockMultipartFile(
-                "data", "test_image.jpg",
+                "files", "test_image.jpg",
                 MediaType.MULTIPART_FORM_DATA_VALUE,
                 new FileInputStream(getTestResource("test_image.jpg").toFile()));
 
@@ -56,7 +56,7 @@ public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileS
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].fileName", is("test_image.jpg")))
-                .andExpect(jsonPath("$[0].createdDate", is("2015-08-28")))
+                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T13:31:58")))
                 .andReturn();
     }
 }

@@ -40,7 +40,7 @@ public class SystemStartupIntegrationTest extends AbstractFileSystemIntegrationT
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].fileName", is("test_image1.jpg")))
-                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05")))
+                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T13:31:58")))
                 .andReturn();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
