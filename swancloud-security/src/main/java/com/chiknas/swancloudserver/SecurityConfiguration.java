@@ -1,10 +1,13 @@
 package com.chiknas.swancloudserver;
 
+import com.chiknas.swancloudserver.entities.RefreshToken;
 import com.chiknas.swancloudserver.entities.User;
 import com.chiknas.swancloudserver.filters.basicauth.BasicAuthSecurityConfigurerAdapter;
 import com.chiknas.swancloudserver.filters.jwt.JwtSecurityConfigurerAdapter;
 import com.chiknas.swancloudserver.filters.jwt.JwtTokenProvider;
+import com.chiknas.swancloudserver.services.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -30,18 +33,24 @@ import javax.servlet.http.Cookie;
 @Profile("production")
 public class SecurityConfiguration {
 
+    @Value("${SSL_ENABLED}")
+    private boolean SSL_ENABLED = true;
+
     public static final String WEBAPP_LOGIN_URL = "/login";
     public static final String WEBAPP_LOGOUT_URL = "/logout";
     public static final String WEBAPP_RESET_PASSWORD_URL = "/reset-password";
-    public static final String JWT_TOKEN_NAME = "BEARER";
+    public static final String JWT_REFRESH_TOKEN_NAME = "BEARER-REFRESH";
 
     private final UserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenService refreshTokenService;
 
     @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, JwtTokenProvider jwtTokenProvider) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, JwtTokenProvider jwtTokenProvider,
+                                 RefreshTokenService refreshTokenService) {
         this.userDetailsService = userDetailsService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.refreshTokenService = refreshTokenService;
     }
 
     /**
@@ -57,7 +66,7 @@ public class SecurityConfiguration {
                 .csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
                 .and()
                 .authorizeRequests()
-                .antMatchers(WEBAPP_LOGIN_URL, "/img/**", "/css/**", "/access-denied")
+                .antMatchers(WEBAPP_LOGIN_URL, "/img/**", "/css/**", "/access-denied", "/js/login.js")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -67,7 +76,7 @@ public class SecurityConfiguration {
                 .and()
                 .logout().logoutUrl(WEBAPP_LOGOUT_URL).logoutSuccessUrl(WEBAPP_LOGIN_URL)
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID", JWT_TOKEN_NAME)
+                .deleteCookies("JSESSIONID", JWT_REFRESH_TOKEN_NAME)
                 .and()
                 .exceptionHandling()
                 .accessDeniedPage("/access-denied")
@@ -77,8 +86,13 @@ public class SecurityConfiguration {
     private AuthenticationSuccessHandler getWebAppAuthenticationSuccessHandler() {
         return (request, response, authentication) -> {
             User user = (User) authentication.getPrincipal();
-            String token = jwtTokenProvider.createToken(user);
-            response.addCookie(new Cookie(JWT_TOKEN_NAME, token));
+
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            Cookie refreshTokenCookie = new Cookie(JWT_REFRESH_TOKEN_NAME, refreshToken.getToken());
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(SSL_ENABLED);
+            response.addCookie(refreshTokenCookie);
+
             response.sendRedirect("/");
         };
     }

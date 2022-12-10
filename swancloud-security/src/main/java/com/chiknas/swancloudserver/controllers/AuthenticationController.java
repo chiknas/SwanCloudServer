@@ -20,15 +20,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.Optional;
 
+import static com.chiknas.swancloudserver.SecurityConfiguration.JWT_REFRESH_TOKEN_NAME;
 import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_LOGIN_URL;
 
 @RestController
@@ -71,8 +69,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refreshtoken")
-    public ResponseEntity<?> refreshtoken(@RequestBody TokenRefreshRequest request) {
-        String requestRefreshToken = request.getRefreshToken();
+    public ResponseEntity<?> refreshtoken(@CookieValue(name = JWT_REFRESH_TOKEN_NAME, required = false) String refreshToken, @RequestBody(required = false) TokenRefreshRequest request) {
+        String requestRefreshToken = Optional.ofNullable(refreshToken)
+                .orElseGet(() -> Optional.ofNullable(request).map(TokenRefreshRequest::getRefreshToken)
+                        .orElse(null));
 
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
