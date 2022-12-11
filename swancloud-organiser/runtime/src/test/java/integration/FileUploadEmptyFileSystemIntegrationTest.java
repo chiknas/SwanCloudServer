@@ -56,7 +56,7 @@ public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileS
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].fileName", is("test_image.jpg")))
-                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T13:31:58")))
+                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T12:31:58")))
                 .andReturn();
     }
 
@@ -100,7 +100,7 @@ public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileS
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].fileName", is("test_image.jpg")))
-                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T13:31:58")))
+                .andExpect(jsonPath("$[0].createdDate", is("2016-09-05T12:31:58")))
                 .andReturn();
     }
 }

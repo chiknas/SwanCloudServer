@@ -53,7 +53,7 @@ public class FilesHelper {
             }
 
             if (result != null) {
-                return Optional.of(Instant.ofEpochMilli(result.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime());
+                return Optional.of(Instant.ofEpochMilli(result.getTime()).atZone(ZoneId.of(ZoneOffset.UTC.getId())).toLocalDateTime());
             }
         } catch (ImageProcessingException | IOException e) {
             log.error(e.getMessage().concat(file.getName()), e);

@@ -33,7 +33,6 @@ commands:
           path: build/test-results/test
       - store_artifacts:
           path: build/test-results/test
-          when: always
 jobs:
   build:
     machine:
