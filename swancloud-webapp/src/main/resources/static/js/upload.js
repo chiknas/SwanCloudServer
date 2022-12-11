@@ -1,4 +1,3 @@
-const uploadForm = document.getElementById("upload-form");
 const filesInput = document.getElementById("files");
 const uploadPopup = document.getElementById("upload-popup");
 const uploadPopupContent = document.getElementById("upload-popup-content");

@@ -29,26 +29,30 @@
           <p>Sync App</p>
         </div>
 
-        <form id="upload-form">
-          <div class="sidenav-item">
-            <label for="files" id="filesInputLabel" onclick="closeNav()">
-              <img
-                id="upload-image"
-                class="header-icon"
-                src="/img/icons/upload.svg"
-              />
-            </label>
-            <p>Upload Images</p>
-            <input id="files" type="file" name="files" multiple="" />
-          </div>
-        </form>
-        <form method="post" th:action="@{/logout}">
-          <div class="sidenav-item">
-            <button id="logout-button" type="submit">
-              <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
-            </button>
-            <p>Logout</p>
-          </div>
+        <label
+          for="files"
+          id="filesInputLabel"
+          class="sidenav-item clickable"
+          onclick="closeNav()"
+        >
+          <img
+            id="upload-image"
+            class="header-icon"
+            src="/img/icons/upload.svg"
+          />
+          <p>Upload Images</p>
+          <input id="files" type="file" name="files" multiple="" />
+        </label>
+
+        <form
+          id="logoutForm"
+          class="sidenav-item clickable"
+          method="post"
+          th:action="@{/logout}"
+          onclick="submitForm('logoutForm')"
+        >
+          <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
+          <p>Logout</p>
         </form>
       </div>
 
@@ -83,6 +87,11 @@
       <script type="text/javascript" th:src="@{/js/gallery.js}"></script>
       <script type="text/javascript" th:src="@{/js/upload.js}"></script>
       <script type="text/javascript" th:src="@{/js/sync.js}"></script>
+      <script type="text/javascript">
+        function submitForm(formId) {
+          document.getElementById(formId).submit();
+        }
+      </script>
     </div>
   </body>
 </html>

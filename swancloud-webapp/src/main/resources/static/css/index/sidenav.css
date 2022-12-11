@@ -33,14 +33,21 @@
 }
 
 .sidenav-item {
-  margin-top: 1em;
   display: flex;
   align-items: center;
   gap: 1em;
+  padding-bottom: 1em;
+  padding-top: 1em;
 }
 
 .clickable {
   cursor: pointer;
+}
+
+.clickable:hover {
+  background-color: #818181;
+  color: black;
+  opacity: 0.8;
 }
 
 @media screen and (max-height: 450px) {
