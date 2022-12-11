@@ -1,0 +1,37 @@
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  padding: 2em;
+  gap: 1em;
+  background-color: #000000;
+  align-items: center;
+}
+
+#upload {
+  border-radius: 100%;
+}
+
+.header-icon {
+  width: 40px;
+}
+
+#upload-form {
+  display: flex;
+  gap: 2em;
+}
+
+#files {
+  display: none;
+}
+
+#filesInputLabel {
+  cursor: pointer;
+}
+
+#logout-button {
+  background: transparent;
+  border: transparent;
+  padding: 0;
+  cursor: pointer;
+}

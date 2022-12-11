@@ -1,0 +1,10 @@
+// This will tell gradle that this is a library module
+allprojects {
+    bootJar {
+        enabled = false
+    }
+
+    jar {
+        enabled = true
+    }
+}

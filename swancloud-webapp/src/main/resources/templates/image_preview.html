@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title th:text="${fileName}"></title>
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico" />
+    <link rel="stylesheet" th:href="@{/css/reset.css}" />
+    <link rel="stylesheet" th:href="@{/css/image_preview.css}" />
+  </head>
+  <body>
+    <div class="image-container">
+      <img th:src="*{'data:image/png;base64,'+image}" class="preview-image" />
+    </div>
+  </body>
+</html>

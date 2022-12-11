@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Swancloud</title>
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico" />
+    <link rel="stylesheet" th:href="@{/css/reset.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/index.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/filter.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/gallery.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/upload_popup.css}" />
+    <link rel="stylesheet" th:href="@{/css/index/sidenav.css}" />
+  </head>
+  <body>
+    <div class="page-container">
+      <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
+          >&times;</a
+        >
+        <div id="last-upload" class="sidenav-item">
+          <p>Last upload:</p>
+          <p th:text="${lastFileUploadedDate}"></p>
+        </div>
+
+        <div class="sidenav-item clickable" onclick="generateQrCode()">
+          <img class="header-icon" src="/img/icons/sync.svg" />
+          <p>Sync App</p>
+        </div>
+
+        <label
+          for="files"
+          id="filesInputLabel"
+          class="sidenav-item clickable"
+          onclick="closeNav()"
+        >
+          <img
+            id="upload-image"
+            class="header-icon"
+            src="/img/icons/upload.svg"
+          />
+          <p>Upload Images</p>
+          <input id="files" type="file" name="files" multiple="" />
+        </label>
+
+        <form
+          id="logoutForm"
+          class="sidenav-item clickable"
+          method="post"
+          th:action="@{/logout}"
+          onclick="submitForm('logoutForm')"
+        >
+          <img class="header-icon" th:src="@{/img/icons/logout.svg}" />
+          <p>Logout</p>
+        </form>
+      </div>
+
+      <div class="header">
+        <span style="font-size: 30px; cursor: pointer" onclick="openNav()"
+          >&#9776;</span
+        >
+      </div>
+
+      <div class="filters">
+        <input type="date" name="date" id="beforeDate" />
+      </div>
+
+      <ul class="gallery" id="gallery-container"></ul>
+
+      <div id="upload-popup" class="overlay">
+        <div class="popup">
+          <h2 id="upload-popup-title">Uploading files...</h2>
+          <a id="popup-close" class="close" onclick="enablePopup(false)"
+            >&times;</a
+          >
+          <div id="upload-popup-content" class="popup-content">
+            <img class="popup-gif" th:src="@{/img/icons/loading.gif}" />
+          </div>
+        </div>
+      </div>
+      <!-- IMPORTANT TO USE THIS FIRST SINCE IT OVERRIDES THE WINDOWS OBJECT -->
+      <script
+        type="text/javascript"
+        th:src="@{/js/refresh_token_interceptor.js}"
+      ></script>
+      <script type="text/javascript" th:src="@{/js/gallery.js}"></script>
+      <script type="text/javascript" th:src="@{/js/upload.js}"></script>
+      <script type="text/javascript" th:src="@{/js/sync.js}"></script>
+      <script type="text/javascript">
+        function submitForm(formId) {
+          document.getElementById(formId).submit();
+        }
+      </script>
+    </div>
+  </body>
+</html>

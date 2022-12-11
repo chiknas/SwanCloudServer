@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Swancloud Login</title>
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico" />
+    <link rel="stylesheet" th:href="@{/css/reset.css}" />
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+  </head>
+  <body>
+    <div class="container">
+      <img class="content" th:src="@{/img/logo.svg}" />
+      <form th:action="@{/login}" method="post">
+        <div class="form-field">
+          <input
+            id="username"
+            type="email"
+            name="username"
+            placeholder="Email"
+            required
+          />
+        </div>
+
+        <div class="form-field">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password webauthn"
+            required
+          />
+        </div>
+
+        <div class="form-field">
+          <button id="submitButton" class="btn" type="button" onclick="login()">
+            Log in
+          </button>
+        </div>
+      </form>
+    </div>
+    <script type="text/javascript" th:src="@{/js/login.js}"></script>
+  </body>
+</html>
