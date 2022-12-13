@@ -61,7 +61,7 @@ const addImage = (id) => {
   const img = document.createElement("img");
   img.classList.add("galleryImage");
   img.onclick = () => {
-    window.location.href = `/preview/${id}`;
+    window.open(`/preview/${id}`, "_blank");
   };
 
   imageContainer.appendChild(img);
