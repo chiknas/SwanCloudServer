@@ -24,6 +24,14 @@ function closeNav() {
   document.getElementById("mySidenav").style["padding-right"] = "0";
 }
 
+function parseDate(date) {
+  const dd = date.getDate();
+  const mm = date.getMonth() + 1;
+  const yyyy = date.getFullYear();
+
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 // How many items to load per request
 const limit = 100;
 // Skip so many items to load the next page
@@ -32,10 +40,10 @@ let offset = 0;
 // Elements
 const galleryContainer = document.getElementById("gallery-container");
 const beforeDate = document.getElementById("beforeDate");
-beforeDate.valueAsDate = new Date();
+beforeDate.value = parseDate(new Date());
 
 // On date filter change refresh the gallery to get results based on the new date
-beforeDate.addEventListener("change", (e) => {
+beforeDate.addEventListener("input", (e) => {
   throttle(() => {
     offset = 0;
     galleryContainer.replaceChildren();
@@ -97,3 +105,21 @@ const handleInfiniteScroll = () => {
   }, 1000);
 };
 window.addEventListener("scroll", handleInfiniteScroll);
+
+// UNCATEGORISED FILTER: Render files on the EPOCH date only.
+const uncategorisedButton = document.getElementById("uncategorized-button");
+function uncategorised() {
+  const isUncategorised = beforeDate.value == "1970-01-01";
+
+  if (isUncategorised) {
+    beforeDate.value = parseDate(new Date());
+    beforeDate.disabled = false;
+    uncategorisedButton.classList.remove("btn-pressed");
+  } else {
+    beforeDate.value = "1970-01-01";
+    beforeDate.disabled = true;
+    uncategorisedButton.classList.add("btn-pressed");
+  }
+
+  beforeDate.dispatchEvent(new Event("input", { bubbles: true }));
+}
