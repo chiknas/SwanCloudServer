@@ -24,6 +24,7 @@ Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html
 
 1. files.base-path = the base path the system will use to start organising the uploaded files. Use when you need to
    mount a volume when using this with Docker. Default setting is the base path the application was initialized on.
+2. files.reset-indexes = Set indexes to be refreshed on startup. Off by default.
 
 ### <ins>Security('production' only)</ins>
 
