@@ -34,6 +34,10 @@ public class IndexingService {
 
     @Value("${files.base-path}")
     private final String filesBasePath = System.getProperty("user.dir");
+
+    @Value("${files.reset-indexes}")
+    private boolean resetIndexes;
+
     private final ConversionService conversionService;
     private final FileMetadataRepository fileMetadataRepository;
 
@@ -71,6 +75,11 @@ public class IndexingService {
      * Can be expensive use with care.
      */
     public void resetIndexes() {
+        boolean isScannedBefore = fileMetadataRepository.count() > 0;
+        if (isScannedBefore && !resetIndexes) {
+            return;
+        }
+
         fileMetadataRepository.deleteAll();
 
         List<Path> paths = new ArrayList<>();
