@@ -25,6 +25,16 @@ public interface CurrentUser {
      */
     void setLastUploadedFileDate(LocalDateTime localDate);
 
+    /**
+     * Returns the datetime of the last time the user uploaded something to the server.
+     */
+    Optional<LocalDateTime> getLastUploadedDate();
+
+    /**
+     * Updates the date the user last uploaded something to the server.
+     */
+    void setLastUploadedDate(LocalDateTime localDate);
+
 
     /**
      * Returns a Base64 string that represents a QR code image that holds information that allows

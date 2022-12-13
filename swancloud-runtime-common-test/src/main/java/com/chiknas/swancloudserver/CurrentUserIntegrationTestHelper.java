@@ -20,6 +20,16 @@ public class CurrentUserIntegrationTestHelper implements CurrentUser {
     }
 
     @Override
+    public Optional<LocalDateTime> getLastUploadedDate() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setLastUploadedDate(LocalDateTime localDate) {
+
+    }
+
+    @Override
     public Optional<String> getSyncUserQR() {
         return Optional.empty();
     }

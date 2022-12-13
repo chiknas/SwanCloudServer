@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +40,13 @@ public class User implements UserDetails {
     @Column(name = "password_expired")
     private boolean isPasswordExpired = true;
 
+    // The date the last uploaded file was taken at.
     @Column(name = "last_uploaded_file_date")
     private LocalDateTime lastUploadedFileDate;
+
+    // The actual date the user last upload something
+    @Column(name = "last_uploaded_date")
+    private LocalDateTime lastUploadedDate = LocalDate.EPOCH.atStartOfDay();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default

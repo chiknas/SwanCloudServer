@@ -33,10 +33,26 @@ public class CurrentUserService implements CurrentUser {
     }
 
     @Override
+    public Optional<LocalDateTime> getLastUploadedDate() {
+        return getCurrentUser().map(User::getLastUploadedDate);
+    }
+
+    @Override
     public void setLastUploadedFileDate(LocalDateTime localDate) {
         getCurrentUser().ifPresent(user -> {
             if (user.getLastUploadedFileDate() == null || localDate.isAfter(user.getLastUploadedFileDate())) {
                 user.setLastUploadedFileDate(localDate);
+                userRepository.save(user);
+            }
+        });
+    }
+
+
+    @Override
+    public void setLastUploadedDate(LocalDateTime localDate) {
+        getCurrentUser().ifPresent(user -> {
+            if (user.getLastUploadedDate() == null || localDate.isAfter(user.getLastUploadedDate())) {
+                user.setLastUploadedDate(localDate);
                 userRepository.save(user);
             }
         });

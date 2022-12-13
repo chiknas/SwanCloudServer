@@ -33,8 +33,8 @@ import javax.servlet.http.Cookie;
 @Profile("production")
 public class SecurityConfiguration {
 
-    @Value("${server.ssl.enabled}")
-    private boolean SSL_ENABLED = true;
+    @Value("${server.ssl.enabled:true}")
+    private boolean SSL_ENABLED;
 
     public static final String WEBAPP_LOGIN_URL = "/login";
     public static final String WEBAPP_LOGOUT_URL = "/logout";

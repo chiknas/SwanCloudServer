@@ -19,8 +19,14 @@
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
           >&times;</a
         >
+
         <div id="last-upload" class="sidenav-item">
           <p>Last upload:</p>
+          <p th:text="${lastUploadedDate}"></p>
+        </div>
+
+        <div class="sidenav-item">
+          <p>Last upload file:</p>
           <p th:text="${lastFileUploadedDate}"></p>
         </div>
 

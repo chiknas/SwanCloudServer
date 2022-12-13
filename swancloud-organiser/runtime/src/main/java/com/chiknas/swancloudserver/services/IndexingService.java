@@ -35,7 +35,7 @@ public class IndexingService {
     @Value("${files.base-path}")
     private final String filesBasePath = System.getProperty("user.dir");
 
-    @Value("${files.reset-indexes}")
+    @Value("${files.reset-indexes:false}")
     private boolean resetIndexes;
 
     private final ConversionService conversionService;

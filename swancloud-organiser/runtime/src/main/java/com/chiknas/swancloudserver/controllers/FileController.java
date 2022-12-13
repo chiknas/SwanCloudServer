@@ -39,6 +39,7 @@ public class FileController {
                 .flatMap(fileMetadata -> Stream.of(fileMetadata.get().getCreatedDate()))
                 .max(LocalDateTime::compareTo)
                 .ifPresent(currentUser::setLastUploadedFileDate);
+        currentUser.setLastUploadedDate(LocalDateTime.now());
     }
 
     @PostMapping("/file/set-date")

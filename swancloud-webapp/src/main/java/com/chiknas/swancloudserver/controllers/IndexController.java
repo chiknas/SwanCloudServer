@@ -25,6 +25,8 @@ public class IndexController {
     public String index(Model model) {
         currentUser.getLastUploadedFileDate()
                 .ifPresent(lastFileUploadedDate -> model.addAttribute("lastFileUploadedDate", lastFileUploadedDate.toLocalDate()));
+        currentUser.getLastUploadedDate()
+                .ifPresent(lastUploadedDate -> model.addAttribute("lastUploadedDate", lastUploadedDate.toLocalDate()));
         return "index"; //view
     }
 
