@@ -22,5 +22,8 @@ public interface FileService {
      */
     List<FileMetadataDTO> findAllFilesMetadata(int limit, int offset, @Nullable FileMetadataFilter filter);
 
-    Optional<byte[]> getImageById(Integer id);
+    /**
+     * Reads the content of the specified file to a byte array.
+     */
+    Optional<byte[]> getFileById(Integer id);
 }

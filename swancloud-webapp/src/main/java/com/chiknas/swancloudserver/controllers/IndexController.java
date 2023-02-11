@@ -32,7 +32,7 @@ public class IndexController {
 
     @GetMapping("/preview/{id}")
     public String preview(Model model, @PathVariable String id) {
-        fileService.getImageById(Integer.valueOf(id))
+        fileService.getFileById(Integer.valueOf(id))
                 .ifPresent(image -> model.addAttribute("image", Base64Utils.encodeToString(image)));
         return "image_preview"; //view
     }

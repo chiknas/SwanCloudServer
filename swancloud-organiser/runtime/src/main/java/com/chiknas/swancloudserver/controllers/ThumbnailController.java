@@ -31,18 +31,14 @@ public class ThumbnailController {
     public byte[] getFileThumbnail(@PathVariable Integer id) {
         final Optional<String> fileName = fileService.findFileMetadataById(id).map(FileMetadataEntity::getFileName);
 
-        if (fileName.isEmpty()) {
-            return null;
-        }
+        return fileName.flatMap(s -> thumbnailService.getThumbnailForFile(s)
+                .map(ThumbnailEntity::getThumbnail)).orElse(null);
 
-        return thumbnailService.getThumbnailForFile(fileName.get())
-                .map(ThumbnailEntity::getThumbnail)
-                .orElse(null);
     }
 
     @GetMapping("/files/preview/{id}")
     @ResponseBody
     public byte[] getFilePreview(@PathVariable Integer id) {
-        return fileService.getImageById(id).orElse(null);
+        return fileService.getFileById(id).orElse(null);
     }
 }

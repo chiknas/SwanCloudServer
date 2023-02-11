@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,8 +26,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.chiknas.swancloudserver.services.helpers.FilesHelper.readFileToImage;
 
 @Slf4j
 @Service
@@ -108,18 +105,19 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * Returns the real image in byte form for the specified image id in the db.
+     * Returns the file content in byte form for the specified file id in the db.
      *
      * @param id - the {@link FileMetadataEntity} id
-     * @return - byte array of the real image
+     * @return - byte array of the real file
      */
     @Override
-    public Optional<byte[]> getImageById(Integer id) {
+    public Optional<byte[]> getFileById(Integer id) {
         return findFileMetadataById(id).map(fileMetadata -> {
-            final String path = fileMetadata.getPath();
-            File imgPath = new File(path);
-            BufferedImage bufferedImage = readFileToImage(imgPath);
-            return ImageHelper.toByteArray(bufferedImage);
+            try {
+                return Files.readAllBytes(Path.of(fileMetadata.getPath()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
