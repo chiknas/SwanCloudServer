@@ -1,13 +1,17 @@
 package com.chiknas.swancloudserver.services;
 
+import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.entities.ThumbnailEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
+import com.chiknas.swancloudserver.repositories.specifications.FileMetadataSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -18,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.chiknas.swancloudserver.services.helpers.FilesHelper.readFileToImage;
@@ -46,7 +51,10 @@ public class ThumbnailService {
         log.info("Thumbnail updates started!");
         long startTime = System.currentTimeMillis();
 
-        Set<FileMetadataEntity> updatedFiles = fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
+        Set<FileMetadataEntity> updatedFiles = fileMetadataRepository.findAll(
+                        Specification.not(FileMetadataSpecification.hasThumbnail()),
+                        Sort.by(Sort.Direction.DESC, "createdDate")
+                )
                 .parallelStream()
                 .peek(fileMetadataEntity -> {
                     File file = Path.of(fileMetadataEntity.getPath()).toFile();
@@ -58,10 +66,26 @@ public class ThumbnailService {
         log.info("Thumbnail update completed in: {}seconds.", (System.currentTimeMillis() - startTime) / 1000);
     }
 
+    
+    @Async
+    public void setThumbnailAsync(FileMetadataDTO fileMetadata) {
+        CompletableFuture.runAsync(() ->
+                fileMetadataRepository
+                        .findById(fileMetadata.getId())
+                        .ifPresent(fileMetadataEntity ->
+                                getThumbnail(fileMetadataEntity.getFile())
+                                        .ifPresent(th -> {
+                                            fileMetadataEntity.setThumbnail(th);
+                                            fileMetadataRepository.save(fileMetadataEntity);
+                                        })
+                        )
+        );
+    }
+
     /**
      * Tries to generate a thumbnail for the given file. Only images and videos are supported.
      */
-    public Optional<ThumbnailEntity> getThumbnail(File file) {
+    private Optional<ThumbnailEntity> getThumbnail(File file) {
         final Optional<BufferedImage> fileThumbnail = generateFileThumbnail(file);
         return fileThumbnail.map(thumbnail -> {
             final ThumbnailEntity entity = new ThumbnailEntity();
@@ -69,6 +93,7 @@ public class ThumbnailService {
             return entity;
         });
     }
+
 
     /**
      * Uses the file type and generates a thumbnail for a video/image. Empty if the thumbnail failed or the file is

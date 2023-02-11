@@ -32,4 +32,11 @@ public class FileMetadataSpecification {
         }
         return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), beforeDate);
     }
+
+    /**
+     * Returns all files that have thumbnail associated with them.
+     */
+    public static Specification<FileMetadataEntity> hasThumbnail() {
+        return (root, query, criteriaBuilder) -> root.get("thumbnail").isNotNull();
+    }
 }

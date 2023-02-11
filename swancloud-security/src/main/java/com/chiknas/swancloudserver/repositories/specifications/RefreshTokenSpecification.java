@@ -14,6 +14,6 @@ public class RefreshTokenSpecification {
      * Checks if a refresh token is expired, meaning its expiry date is in the past.
      */
     public static Specification<RefreshToken> isExpired() {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.lessThan(root.get("expiry_date"), Instant.now());
+        return (root, query, criteriaBuilder) -> criteriaBuilder.lessThan(root.get("expiryDate"), Instant.now());
     }
 }

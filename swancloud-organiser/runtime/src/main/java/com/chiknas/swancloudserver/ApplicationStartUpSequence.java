@@ -16,21 +16,17 @@ public class ApplicationStartUpSequence implements ApplicationListener<Applicati
 
     private final IndexingService indexingService;
     private final ThumbnailService thumbnailService;
-    private final DirectoryWatcherService directoryWatcherService;
 
     @Autowired
-    public ApplicationStartUpSequence(IndexingService indexingService, ThumbnailService thumbnailService, DirectoryWatcherService directoryWatcherService) {
+    public ApplicationStartUpSequence(IndexingService indexingService, ThumbnailService thumbnailService) {
         this.indexingService = indexingService;
         this.thumbnailService = thumbnailService;
-        this.directoryWatcherService = directoryWatcherService;
     }
 
     // Run operations that are required for the proper flow of the application here
     @PostConstruct
     public void startUp() {
         indexingService.resetIndexes();
-
-        new Thread(directoryWatcherService).start();
     }
 
     // Only run non crucial/expensive operations here

@@ -9,6 +9,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.mp4.Mp4Directory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -30,6 +31,17 @@ public class FilesHelper {
         // No need to init. class to help work with files in the fielsystem.
     }
 
+    public static Optional<LocalDateTime> getCreationDate(MultipartFile file) {
+        try {
+            Metadata metadata = ImageMetadataReader.readMetadata(file.getInputStream());
+            return extractCreationDate(metadata);
+        } catch (ImageProcessingException | IOException e) {
+            log.error(e.getMessage().concat(file.getName()), e);
+        }
+
+        return Optional.empty();
+    }
+
     /**
      * Tries to read media file metadata (exif) to return the date the media was created.
      *
@@ -39,24 +51,29 @@ public class FilesHelper {
     public static Optional<LocalDateTime> getCreationDate(File file) {
         try {
             Metadata metadata = ImageMetadataReader.readMetadata(file);
-
-            Date result = null;
-
-            ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-            if (exifSubIFDDirectory != null) {
-                result = exifSubIFDDirectory.getDateOriginal();
-            }
-
-            Mp4Directory mp4Directory = metadata.getFirstDirectoryOfType(Mp4Directory.class);
-            if (mp4Directory != null) {
-                result = mp4Directory.getDate(Mp4Directory.TAG_CREATION_TIME);
-            }
-
-            if (result != null) {
-                return Optional.of(Instant.ofEpochMilli(result.getTime()).atZone(ZoneId.of(ZoneOffset.UTC.getId())).toLocalDateTime());
-            }
+            return extractCreationDate(metadata);
         } catch (ImageProcessingException | IOException e) {
             log.error(e.getMessage().concat(file.getName()), e);
+        }
+
+        return Optional.empty();
+    }
+
+    private static Optional<LocalDateTime> extractCreationDate(Metadata metadata) {
+        Date result = null;
+
+        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+        if (exifSubIFDDirectory != null) {
+            result = exifSubIFDDirectory.getDateOriginal();
+        }
+
+        Mp4Directory mp4Directory = metadata.getFirstDirectoryOfType(Mp4Directory.class);
+        if (mp4Directory != null) {
+            result = mp4Directory.getDate(Mp4Directory.TAG_CREATION_TIME);
+        }
+
+        if (result != null) {
+            return Optional.of(Instant.ofEpochMilli(result.getTime()).atZone(ZoneId.of(ZoneOffset.UTC.getId())).toLocalDateTime());
         }
 
         return Optional.empty();

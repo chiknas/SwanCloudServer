@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 @Getter
@@ -28,5 +30,9 @@ public class FileMetadataEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
     private ThumbnailEntity thumbnail;
+
+    public File getFile() {
+        return Path.of(this.getPath()).toFile();
+    }
 
 }

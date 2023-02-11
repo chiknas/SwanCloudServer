@@ -25,15 +25,13 @@ class FileServiceImplTest {
     @Mock
     private ConversionService conversionService;
     @Mock
-    private ThumbnailService thumbnailService;
-    @Mock
-    private IndexingService indexingService;
+    private FileOrganiserService fileOrganiserService;
 
     private FileService fileService;
 
     @BeforeEach
     void setUp() {
-        fileService = new FileServiceImpl(fileMetadataRepository, conversionService, thumbnailService, indexingService);
+        fileService = new FileServiceImpl(fileMetadataRepository, conversionService, fileOrganiserService);
     }
 
     // Tests we can retrieve ALL metadata for files with a null filter

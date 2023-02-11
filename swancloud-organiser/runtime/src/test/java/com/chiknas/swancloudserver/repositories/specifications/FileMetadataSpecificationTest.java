@@ -14,8 +14,7 @@ import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileMetadataSpecificationTest {
@@ -40,5 +39,19 @@ class FileMetadataSpecificationTest {
         // Then the created date is checked that is the first epoch date
         Path<Object> createdDate = root.get("createdDate");
         verify(criteriaBuilder, times(1)).equal(eq(createdDate), eq(LocalDate.parse("1970-01-01").atStartOfDay()));
+    }
+
+    @Test
+    public void hasThumbnail() {
+        // Given hasThumbnail spec
+        Specification<FileMetadataEntity> hasThumbnail = FileMetadataSpecification.hasThumbnail();
+
+        // When the predicate is created
+        Path<Object> createdDate = mock(Path.class);
+        when(root.get(eq("thumbnail"))).thenReturn(createdDate);
+        hasThumbnail.toPredicate(root, query, criteriaBuilder);
+
+        // Then an is not null where clause is used
+        verify(createdDate, times(1)).isNotNull();
     }
 }
