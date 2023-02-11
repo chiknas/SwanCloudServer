@@ -25,4 +25,8 @@ public class FileMetadataEntity {
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
+    private ThumbnailEntity thumbnail;
+
 }

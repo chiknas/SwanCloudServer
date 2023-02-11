@@ -139,7 +139,7 @@ public class FileServiceImpl implements FileService {
     public void moveFile(File file, Path path, LocalDateTime createdDate) {
         try {
             File moveLocation = new File(path + "/" + file.getName());
-            Files.move(file.toPath(), moveLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            File savedFile = Files.move(file.toPath(), moveLocation.toPath(), StandardCopyOption.REPLACE_EXISTING).toFile();
 
             // update metadata if they exist or create new entry if it doesn't
             fileMetadataRepository.findByFileName(moveLocation.getName()).ifPresentOrElse(
@@ -149,7 +149,7 @@ public class FileServiceImpl implements FileService {
                             fileMetadata.setCreatedDate(createdDate);
                         }
 
-                        thumbnailService.addThumbnail(fileMetadata);
+                        thumbnailService.getThumbnail(savedFile).ifPresent(fileMetadata::setThumbnail);
 
                         fileMetadataRepository.save(fileMetadata);
                     },
@@ -161,7 +161,7 @@ public class FileServiceImpl implements FileService {
                             fileMetadata.setCreatedDate(createdDate);
                         }
 
-                        thumbnailService.addThumbnail(fileMetadata);
+                        thumbnailService.getThumbnail(savedFile).ifPresent(fileMetadata::setThumbnail);
 
                         fileMetadataRepository.save(fileMetadata);
                     }

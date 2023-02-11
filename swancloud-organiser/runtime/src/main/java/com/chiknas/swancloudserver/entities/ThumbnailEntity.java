@@ -19,9 +19,6 @@ public class ThumbnailEntity {
     @GeneratedValue
     private Integer id;
 
-    @Column(name = "file_name", unique = true)
-    private String fileName;
-
     @Lob
     @Column(name = "thumbnail")
     private byte[] thumbnail;

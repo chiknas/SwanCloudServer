@@ -3,7 +3,6 @@ package com.chiknas.swancloudserver.services;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.entities.ThumbnailEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
-import com.chiknas.swancloudserver.repositories.ThumbnailRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -17,18 +16,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.chiknas.swancloudserver.services.helpers.FilesHelper.readFileToImage;
 
 /**
- * Service that holds operations related to thumbnails. We can also run this service in a thread to create all the
- * thumbnails on
- * files that do not have a thumbnail in the background. Only one can run at the background, if you try to run it
- * more than once it
- * will not do anything.
+ * Service that holds operations related to thumbnails.
  *
  * @author nkukn
  * @since 2/21/2021
@@ -38,12 +33,10 @@ import static com.chiknas.swancloudserver.services.helpers.FilesHelper.readFileT
 public class ThumbnailService {
 
     private final FileMetadataRepository fileMetadataRepository;
-    private final ThumbnailRepository thumbnailRepository;
 
     @Autowired
-    public ThumbnailService(FileMetadataRepository fileMetadataRepository, ThumbnailRepository thumbnailRepository) {
+    public ThumbnailService(FileMetadataRepository fileMetadataRepository) {
         this.fileMetadataRepository = fileMetadataRepository;
-        this.thumbnailRepository = thumbnailRepository;
     }
 
     /**
@@ -53,42 +46,28 @@ public class ThumbnailService {
         log.info("Thumbnail updates started!");
         long startTime = System.currentTimeMillis();
 
-        List<ThumbnailEntity> newThumbnails = new ArrayList<>();
-
-        fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
+        Set<FileMetadataEntity> updatedFiles = fileMetadataRepository.findAll(Sort.by(Sort.Direction.DESC, "createdDate"))
                 .parallelStream()
-                .parallel()
-                .forEach(fileMetadataEntity -> addThumbnail(fileMetadataEntity)
-                        .ifPresent(newThumbnails::add));
+                .peek(fileMetadataEntity -> {
+                    File file = Path.of(fileMetadataEntity.getPath()).toFile();
+                    getThumbnail(file).ifPresent(fileMetadataEntity::setThumbnail);
+                }).collect(Collectors.toSet());
 
-        log.info("Thumbnail update completed in: {}sec for {} new thumbnails.",
-                (System.currentTimeMillis() - startTime) / 1000, newThumbnails.size());
+        fileMetadataRepository.saveAll(updatedFiles);
+
+        log.info("Thumbnail update completed in: {}seconds.", (System.currentTimeMillis() - startTime) / 1000);
     }
 
     /**
-     * Returns a thumbnail entity for the given file name if found. empty optional otherwise.
+     * Tries to generate a thumbnail for the given file. Only images and videos are supported.
      */
-    public Optional<ThumbnailEntity> getThumbnailForFile(String fileName) {
-        return thumbnailRepository.findByFileName(fileName);
-    }
-
-    /**
-     * Will generate and persist a new {@link ThumbnailEntity} for the given file metadata. If a thumbnail
-     * with the given name already exists it doesn't do anything.
-     */
-    public Optional<ThumbnailEntity> addThumbnail(FileMetadataEntity fileMetadataEntity) {
-        if (!thumbnailRepository.existsByFileName(fileMetadataEntity.getFileName())) {
-            final File file = Path.of(fileMetadataEntity.getPath()).toFile();
-            final Optional<BufferedImage> fileThumbnail = generateFileThumbnail(file);
-            final Optional<ThumbnailEntity> thumbnailEntity = fileThumbnail.map(thumbnail -> {
-                final ThumbnailEntity entity = new ThumbnailEntity();
-                entity.setThumbnail(ImageHelper.toByteArray(thumbnail));
-                entity.setFileName(fileMetadataEntity.getFileName());
-                return entity;
-            });
-            return thumbnailEntity.map(thumbnailRepository::save);
-        }
-        return Optional.empty();
+    public Optional<ThumbnailEntity> getThumbnail(File file) {
+        final Optional<BufferedImage> fileThumbnail = generateFileThumbnail(file);
+        return fileThumbnail.map(thumbnail -> {
+            final ThumbnailEntity entity = new ThumbnailEntity();
+            entity.setThumbnail(ImageHelper.toByteArray(thumbnail));
+            return entity;
+        });
     }
 
     /**
