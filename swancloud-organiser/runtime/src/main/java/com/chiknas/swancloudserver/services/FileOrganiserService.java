@@ -46,7 +46,7 @@ public class FileOrganiserService {
 
     public Optional<FileMetadataDTO> categorizeFile(String fileName, MultipartFile file) {
         try {
-            LocalDateTime creationDate = getCreationDate(file).orElse(LocalDate.EPOCH.atStartOfDay());
+            LocalDateTime creationDate = getCreationDate(file).orElse(LocalDate.now().atStartOfDay());
             Path pathFromDate = createPathFromDate(creationDate);
 
             File savedFile = Files.write(pathFromDate.resolve(fileName), file.getBytes()).toFile();
