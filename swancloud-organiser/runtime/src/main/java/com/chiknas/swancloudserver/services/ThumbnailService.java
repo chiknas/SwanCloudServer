@@ -4,6 +4,7 @@ import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.entities.ThumbnailEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
 import com.chiknas.swancloudserver.repositories.specifications.FileMetadataSpecification;
+import com.chiknas.swancloudserver.services.helpers.ImageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -22,7 +23,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.chiknas.swancloudserver.services.helpers.FilesHelper.readFileToImage;
+import static com.chiknas.swancloudserver.services.helpers.ImageHelper.readFileToImage;
 
 /**
  * Service that holds operations related to thumbnails.
@@ -122,17 +123,22 @@ public class ThumbnailService {
      * Tries to create a thumbnail for the given video file. Will fail if file is not a video.
      */
     private BufferedImage getVideoThumbnail(File file) {
-        try {
-            FFmpegFrameGrabber g = new FFmpegFrameGrabber(file.getAbsolutePath());
+        try (FFmpegFrameGrabber g = new FFmpegFrameGrabber(file.getAbsolutePath())) {
             g.setFormat("mp4");
             g.start();
-            final BufferedImage image = new Java2DFrameConverter().convert(g.grabImage());
-            g.close();
-            return image;
+            return getImageFromFrame(g.grabImage());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         return null;
+    }
+
+    private BufferedImage getImageFromFrame(org.bytedeco.javacv.Frame frame) {
+        try (final Java2DFrameConverter frameConverter = new Java2DFrameConverter()) {
+            return frameConverter.convert(frame);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -140,10 +146,18 @@ public class ThumbnailService {
      * empty BufferedImage.
      */
     private BufferedImage getImageThumbnail(File file) {
-        BufferedImage thumbnail = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
-        Optional.ofNullable(readFileToImage(file)).ifPresent(image ->
-                thumbnail.createGraphics()
-                        .drawImage(image.getScaledInstance(320, 240, Image.SCALE_DEFAULT), 0, 0, null));
-        return thumbnail;
+        int thumbnailWidth = 320;
+        int thumbnailHeight = 240;
+        return Optional.ofNullable(readFileToImage(file))
+                .map(image -> resizeImage(image, thumbnailWidth, thumbnailHeight))
+                .orElse(new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_RGB));
+    }
+
+    private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = resizedImage.createGraphics();
+        graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        graphics2D.dispose();
+        return resizedImage;
     }
 }
