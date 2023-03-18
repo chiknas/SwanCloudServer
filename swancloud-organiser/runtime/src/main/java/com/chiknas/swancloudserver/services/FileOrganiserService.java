@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -45,23 +47,45 @@ public class FileOrganiserService {
     }
 
     public Optional<FileMetadataDTO> categorizeFile(String fileName, MultipartFile file) {
-        try {
-            LocalDateTime creationDate = getCreationDate(file).orElse(LocalDate.now().atStartOfDay());
-            Path pathFromDate = createPathFromDate(creationDate);
+        LocalDateTime creationDate = getCreationDate(file).orElse(LocalDate.now().atStartOfDay());
+        Path pathFromDate = createPathFromDate(creationDate);
+        File fileDiscLocation = pathFromDate.resolve(fileName).toFile();
 
-            File savedFile = Files.write(pathFromDate.resolve(fileName), file.getBytes()).toFile();
+        File savedFile = saveFileToDisc(file, fileDiscLocation);
 
-            Optional<FileMetadataDTO> fileMetadataDTO = indexingService.index(savedFile);
+        Optional<FileMetadataDTO> fileMetadataDTO = indexingService.index(savedFile);
 
-            fileMetadataDTO.ifPresent(thumbnailService::setThumbnailAsync);
+        fileMetadataDTO.ifPresent(thumbnailService::setThumbnailAsync);
 
-            return fileMetadataDTO;
+        return fileMetadataDTO;
+    }
+
+    /**
+     * Saves the specified file to the location on the disc.
+     * Uses Input/Output stream to be able to handle large files
+     * without loading them to memory.
+     * Misuse of a file here can result in {@link OutOfMemoryError}
+     */
+    private File saveFileToDisc(MultipartFile fileToSave, File fileDiscLocation) {
+
+        try (FileOutputStream outStream = new FileOutputStream(fileDiscLocation)) {
+
+            int readByteCount = 0;
+            byte[] bufferedBytes = new byte[1024];
+
+            BufferedInputStream fileInputStream = new BufferedInputStream(fileToSave.getInputStream());
+
+            while ((readByteCount = fileInputStream.read(bufferedBytes)) != -1) {
+                outStream.write(bufferedBytes, 0, readByteCount);
+            }
+
+            return fileDiscLocation;
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to save file to disc: " + fileDiscLocation, e);
         }
-
     }
+
 
     /**
      * Re-categorizes a file based the passed in date.
