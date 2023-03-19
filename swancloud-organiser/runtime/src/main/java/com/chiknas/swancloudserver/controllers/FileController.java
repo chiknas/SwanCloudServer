@@ -1,65 +1,53 @@
 package com.chiknas.swancloudserver.controllers;
 
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
-import com.chiknas.swancloudserver.dto.SetFileDateDTO;
-import com.chiknas.swancloudserver.security.CurrentUser;
-import com.chiknas.swancloudserver.services.FileMetadataFilter;
-import com.chiknas.swancloudserver.services.FileOrganiserService;
+import com.chiknas.swancloudserver.dto.StreamPartialContentDTO;
 import com.chiknas.swancloudserver.services.FileService;
+import com.chiknas.swancloudserver.services.FileStreamingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRange;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.io.File;
 
+/**
+ * Controller to host endpoints related to direct operations with the files on the filesystem.
+ */
 @RestController
 @RequestMapping("api")
 public class FileController {
 
     private final FileService fileService;
-    private final FileOrganiserService fileOrganiserService;
-    private final CurrentUser currentUser;
+    private final FileStreamingService fileStreamingService;
 
     @Autowired
-    public FileController(FileService fileService, FileOrganiserService fileOrganiserService, CurrentUser currentUser) {
+    public FileController(FileService fileService, FileStreamingService fileStreamingService) {
         this.fileService = fileService;
-        this.fileOrganiserService = fileOrganiserService;
-        this.currentUser = currentUser;
+        this.fileStreamingService = fileStreamingService;
     }
 
-    @PostMapping("/upload")
-    public void handleFileUpload(@RequestPart("files") List<MultipartFile> files) {
-        files.stream().map(fileService::storeFile)
-                .filter(Optional::isPresent)
-                .flatMap(fileMetadata -> Stream.of(fileMetadata.get().getCreatedDate()))
-                .max(LocalDateTime::compareTo)
-                .ifPresent(currentUser::setLastUploadedFileDate);
-        currentUser.setLastUploadedDate(LocalDateTime.now());
+    @GetMapping("/files/video/{id}")
+    public ResponseEntity<ByteArrayResource> getVideoByName(@RequestHeader(HttpHeaders.RANGE) String range, @PathVariable Integer id) {
+        return fileService.getFileById(id)
+                .filter(x -> x.getFileMimeType().contains("video"))
+                .map(FileMetadataDTO::getFile)
+                .map(x -> getByteArrayResourceResponseEntity(range, x))
+                .orElseThrow(() -> new RuntimeException("Video with id: " + id + " not found."));
     }
 
-    @PostMapping("/file/set-date")
-    public void setFileDate(@RequestBody SetFileDateDTO fileDTO) {
-        fileOrganiserService.reCategorizeFile(fileDTO.getFileId(), fileDTO.getCreationDate());
-    }
+    private ResponseEntity<ByteArrayResource> getByteArrayResourceResponseEntity(String range, File x) {
+        HttpRange httpRange = fileStreamingService.parseFirstRangeHeader(range);
 
-    @GetMapping("/files")
-    public List<FileMetadataDTO> getFiles(
-            @RequestParam int limit,
-            @RequestParam int offset,
-            @RequestParam(required = false) Boolean uncategorized,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate
-    ) {
-        FileMetadataFilter fileMetadataFilter = new FileMetadataFilter();
-        Optional.ofNullable(uncategorized).ifPresent(fileMetadataFilter::setUncategorized);
-        // Set current day included: time to be midnight so we get all files in the current day
-        Optional.ofNullable(beforeDate).map(date -> date.plusDays(1).atStartOfDay()).ifPresent(fileMetadataFilter::setBeforeDate);
-        return fileService.findAllFilesMetadata(limit, offset, fileMetadataFilter);
-    }
+        StreamPartialContentDTO chunk = fileStreamingService.getStreamPartialContent(x, httpRange);
 
+        return ResponseEntity
+                .status(HttpStatus.PARTIAL_CONTENT)
+                .contentLength(chunk.getContentLength())
+                .headers(chunk.getHttpHeaders())
+                .body(new ByteArrayResource(chunk.getChunkData()));
+    }
 }

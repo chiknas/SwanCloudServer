@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver.dto;
 
+import java.io.File;
 import java.time.LocalDateTime;
 
 /**
@@ -12,7 +13,11 @@ public interface FileMetadataDTO {
 
     Integer getId();
 
-    String getFileName();
-
     LocalDateTime getCreatedDate();
+
+    File getFile();
+
+    String getFileMimeType();
+
+    byte[] getThumbnail();
 }

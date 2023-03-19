@@ -23,7 +23,7 @@ public interface FileService {
     List<FileMetadataDTO> findAllFilesMetadata(int limit, int offset, @Nullable FileMetadataFilter filter);
 
     /**
-     * Reads the content of the specified file to a byte array.
+     * Returns file metadata of the file with the specified id.
      */
-    Optional<byte[]> getFileById(Integer id);
+    Optional<FileMetadataDTO> getFileById(Integer id);
 }

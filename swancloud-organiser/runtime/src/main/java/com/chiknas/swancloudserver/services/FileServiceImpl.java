@@ -14,9 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -91,14 +88,8 @@ public class FileServiceImpl implements FileService {
      * @return - byte array of the real file
      */
     @Override
-    public Optional<byte[]> getFileById(Integer id) {
-        return findFileMetadataById(id).map(fileMetadata -> {
-            try {
-                return Files.readAllBytes(Path.of(fileMetadata.getPath()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    public Optional<FileMetadataDTO> getFileById(Integer id) {
+        return findFileMetadataById(id).map(x -> conversionService.convert(x, FileMetadataDTO.class));
     }
 
 }

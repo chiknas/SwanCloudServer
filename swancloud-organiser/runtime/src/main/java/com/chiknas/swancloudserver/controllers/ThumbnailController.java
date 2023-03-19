@@ -1,8 +1,7 @@
 package com.chiknas.swancloudserver.controllers;
 
-import com.chiknas.swancloudserver.entities.FileMetadataEntity;
-import com.chiknas.swancloudserver.entities.ThumbnailEntity;
-import com.chiknas.swancloudserver.services.FileServiceImpl;
+import com.chiknas.swancloudserver.dto.FileMetadataDTO;
+import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,26 +13,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api")
 public class ThumbnailController {
 
-    private final FileServiceImpl fileService;
+    private final FileService fileService;
 
     @Autowired
-    public ThumbnailController(FileServiceImpl fileService) {
+    public ThumbnailController(FileService fileService) {
         this.fileService = fileService;
     }
 
     @GetMapping("/files/thumbnail/{id}")
     @ResponseBody
     public byte[] getFileThumbnail(@PathVariable Integer id) {
-        return fileService.findFileMetadataById(id)
-                .map(FileMetadataEntity::getThumbnail)
-                .map(ThumbnailEntity::getThumbnail)
+        return fileService.getFileById(id)
+                .map(FileMetadataDTO::getThumbnail)
                 .orElse(null);
 
     }
 
-    @GetMapping("/files/preview/{id}")
-    @ResponseBody
-    public byte[] getFilePreview(@PathVariable Integer id) {
-        return fileService.getFileById(id).orElse(null);
-    }
 }
