@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver.controllers;
 
+import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.security.CurrentUser;
 import com.chiknas.swancloudserver.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Controller
 public class IndexController {
@@ -33,7 +38,20 @@ public class IndexController {
     @GetMapping("/preview/{id}")
     public String preview(Model model, @PathVariable String id) {
         fileService.getFileById(Integer.valueOf(id))
-                .ifPresent(image -> model.addAttribute("image", Base64Utils.encodeToString(image)));
+                .filter(x -> x.getFileMimeType().contains("image"))
+                .map(FileMetadataDTO::getFile)
+                .map(File::toPath)
+                .map(this::getBase64Bytes)
+                .ifPresent(base64Bytes -> model.addAttribute("image", base64Bytes));
+        
         return "image_preview"; //view
+    }
+
+    private String getBase64Bytes(Path path) {
+        try {
+            return Base64Utils.encodeToString(Files.readAllBytes(path));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
