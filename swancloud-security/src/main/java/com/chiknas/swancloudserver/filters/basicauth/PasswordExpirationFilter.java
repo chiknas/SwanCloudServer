@@ -1,18 +1,18 @@
 package com.chiknas.swancloudserver.filters.basicauth;
 
 import com.chiknas.swancloudserver.entities.User;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Optional;
 
 import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_LOGOUT_URL;
@@ -22,6 +22,7 @@ import static com.chiknas.swancloudserver.SecurityConfiguration.WEBAPP_RESET_PAS
  * Forces the user to change its password if it is expired {@link User#isPasswordExpired()}
  * by redirecting him to the reset password page instead of allowing access to the app.
  */
+@Slf4j
 public class PasswordExpirationFilter extends GenericFilterBean {
 
     @Override
@@ -59,7 +60,7 @@ public class PasswordExpirationFilter extends GenericFilterBean {
     }
 
     private boolean isApiRequest(String currentUrl) {
-        return currentUrl.contains("/api/");
+        return currentUrl.contains("/api/") || currentUrl.contains("/streaming/");
     }
 
     private Optional<User> getLoggedInUser() {
@@ -97,7 +98,14 @@ public class PasswordExpirationFilter extends GenericFilterBean {
     private void continueChain(ServletRequest request, ServletResponse response, FilterChain chain) {
         try {
             chain.doFilter(request, response);
-        } catch (IOException | ServletException e) {
+        } catch (ClientAbortException e) {
+            // Video tag was complaining that we are too slow and dropping the connection
+            // before we responded to the request. This is fine for our app because we are
+            // reading from files which takes some time. Give us a break!
+            if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+            }
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

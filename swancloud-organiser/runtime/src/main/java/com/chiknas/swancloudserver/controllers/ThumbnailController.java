@@ -24,7 +24,7 @@ public class ThumbnailController {
     @ResponseBody
     public byte[] getFileThumbnail(@PathVariable Integer id) {
         return fileService.getFileById(id)
-                .map(FileMetadataDTO::getThumbnail)
+                .flatMap(FileMetadataDTO::getThumbnail)
                 .orElse(null);
 
     }

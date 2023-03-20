@@ -3,7 +3,8 @@ package com.chiknas.swancloudserver;
 import com.chiknas.swancloudserver.entities.RefreshToken;
 import com.chiknas.swancloudserver.entities.User;
 import com.chiknas.swancloudserver.filters.basicauth.BasicAuthSecurityConfigurerAdapter;
-import com.chiknas.swancloudserver.filters.jwt.JwtSecurityConfigurerAdapter;
+import com.chiknas.swancloudserver.filters.jwt.JwtTokenConnectionMode;
+import com.chiknas.swancloudserver.filters.jwt.JwtTokenFilter;
 import com.chiknas.swancloudserver.filters.jwt.JwtTokenProvider;
 import com.chiknas.swancloudserver.services.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import javax.servlet.http.Cookie;
@@ -60,7 +62,7 @@ public class SecurityConfiguration {
      * at the main context (starting with /).
      */
     @Bean
-    @Order(3)
+    @Order(4)
     public SecurityFilterChain webAppFilterChain(HttpSecurity http) throws Exception {
         return withHttpSecurity(http)
                 .antMatcher("/**")
@@ -99,6 +101,18 @@ public class SecurityConfiguration {
         };
     }
 
+
+    @Bean
+    @Order(3)
+    public SecurityFilterChain streamingApiFilterChain(HttpSecurity http) throws Exception {
+        return withRestApiSecurity(http, JwtTokenConnectionMode.URL)
+                .antMatcher("/streaming/**")
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and().build();
+    }
+
     /**
      * Security configuration for the rest api part of the application. This includes all rest endpoints under
      * the api context (starting with /api)
@@ -130,27 +144,34 @@ public class SecurityConfiguration {
                 .and().build();
     }
 
+    private HttpSecurity withHttpSecurity(HttpSecurity http) throws Exception {
+        return withHttpSecurity(http, JwtTokenConnectionMode.HEADER);
+    }
+
     /**
      * Http security configuration for every single HTTP endpoint in the system.
      */
-    private HttpSecurity withHttpSecurity(HttpSecurity http) throws Exception {
+    private HttpSecurity withHttpSecurity(HttpSecurity http, JwtTokenConnectionMode jwtTokenConnectionMode) throws Exception {
         return http
                 .httpBasic().disable()
                 .authenticationProvider(authProvider())
-                .apply(new JwtSecurityConfigurerAdapter(jwtTokenProvider))
-                .and()
+                .addFilterBefore(new JwtTokenFilter(jwtTokenProvider, jwtTokenConnectionMode), UsernamePasswordAuthenticationFilter.class)
                 .apply(new BasicAuthSecurityConfigurerAdapter()).and();
     }
 
     /**
      * Http security configuration for every single REST endpoint in the system.
      */
-    private HttpSecurity withRestApiSecurity(HttpSecurity http) throws Exception {
-        return withHttpSecurity(http)
+    private HttpSecurity withRestApiSecurity(HttpSecurity http, JwtTokenConnectionMode jwtTokenConnectionMode) throws Exception {
+        return withHttpSecurity(http, jwtTokenConnectionMode)
                 .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and();
+    }
+
+    private HttpSecurity withRestApiSecurity(HttpSecurity http) throws Exception {
+        return withRestApiSecurity(http, JwtTokenConnectionMode.HEADER);
     }
 
 
