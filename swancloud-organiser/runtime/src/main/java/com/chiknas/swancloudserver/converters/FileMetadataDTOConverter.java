@@ -2,6 +2,7 @@ package com.chiknas.swancloudserver.converters;
 
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
+import com.chiknas.swancloudserver.entities.ThumbnailEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.boot.web.server.MimeMappings;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * @author nkukn
@@ -39,13 +41,13 @@ public class FileMetadataDTOConverter implements Converter<FileMetadataEntity, F
 
             @Override
             public String getFileMimeType() {
-                String extension = FilenameUtils.getExtension(getFile().getName());
+                String extension = FilenameUtils.getExtension(getFile().getName()).toLowerCase();
                 return MimeMappings.DEFAULT.get(extension);
             }
 
             @Override
-            public byte[] getThumbnail() {
-                return source.getThumbnail().getThumbnail();
+            public Optional<byte[]> getThumbnail() {
+                return Optional.ofNullable(source.getThumbnail()).map(ThumbnailEntity::getThumbnail);
             }
         };
     }
