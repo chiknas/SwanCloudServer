@@ -18,14 +18,14 @@ import java.io.File;
  * Controller to host endpoints related to direct operations with the files on the filesystem.
  */
 @RestController
-@RequestMapping("api")
-public class FileController {
+@RequestMapping("streaming")
+public class StreamingController {
 
     private final FileService fileService;
     private final FileStreamingService fileStreamingService;
 
     @Autowired
-    public FileController(FileService fileService, FileStreamingService fileStreamingService) {
+    public StreamingController(FileService fileService, FileStreamingService fileStreamingService) {
         this.fileService = fileService;
         this.fileStreamingService = fileStreamingService;
     }

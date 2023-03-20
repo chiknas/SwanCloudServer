@@ -62,13 +62,20 @@ public class JwtTokenProvider {
         return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody().getSubject();
     }
 
-    public Optional<String> resolveToken(HttpServletRequest req) {
+    public Optional<String> resolveHeaderToken(HttpServletRequest req) {
         String bearerToken = req.getHeader("Authorization");
+
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return Optional.of(bearerToken.substring(7));
         }
 
         return Optional.empty();
+    }
+
+    public Optional<String> resolveUrlToken(HttpServletRequest req) {
+        return Optional.ofNullable(req.getParameterMap().get("token"))
+                .filter(x -> x.length == 1)
+                .map(x -> x[0]);
     }
 
     public Date getTokenExpiration(String token) {
