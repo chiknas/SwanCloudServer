@@ -2,6 +2,7 @@ package com.chiknas.swancloudserver.dto;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Data transfer object for file metadata
@@ -19,5 +20,5 @@ public interface FileMetadataDTO {
 
     String getFileMimeType();
 
-    byte[] getThumbnail();
+    Optional<byte[]> getThumbnail();
 }

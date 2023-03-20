@@ -84,7 +84,7 @@ public class FileStreamingService {
             int lower = (int) httpRange.getRangeStart(size);
             int upper = (int) httpRange.getRangeEnd(size);
 
-            String extension = FilenameUtils.getExtension(file.getName());
+            String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
             String contentType = MimeMappings.DEFAULT.get(extension);
 
             HttpHeaders httpHeaders = new HttpHeaders();
