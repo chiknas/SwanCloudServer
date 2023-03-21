@@ -9,8 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/file_preview.css}" />
   </head>
   <body>
-    <div class="file-container">
-      <img th:src="*{'data:image/png;base64,'+image}" class="preview-file" />
-    </div>
+    <div id="page-container" class="file-container"></div>
+    <script type="text/javascript" th:src="@{/js/video_preview.js}"></script>
   </body>
 </html>
