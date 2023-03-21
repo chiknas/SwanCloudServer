@@ -58,6 +58,7 @@ public class IndexController {
 
         String base64Bytes = getBase64Bytes(filePath);
         model.addAttribute("image", base64Bytes);
+        model.addAttribute("fileName", fileMetadataDTO.getFile().getName());
 
         return "image_preview"; //view
     }
@@ -71,7 +72,7 @@ public class IndexController {
     }
 
     private String getVideoView(Model model, FileMetadataDTO fileMetadataDTO) {
-        model.addAttribute("id", fileMetadataDTO.getId());
+        model.addAttribute("fileName", fileMetadataDTO.getFile().getName());
 
         return "video_preview";
     }
