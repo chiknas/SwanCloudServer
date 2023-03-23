@@ -52,20 +52,42 @@ beforeDate.addEventListener("input", (e) => {
 });
 
 /**
+ * Returns a div container with a div child to be used as an overlay
+ * div with a background image using css.
+ */
+const getPlayButtonOverlayContainer = (enabled) => {
+  const overlayItem = document.createElement("img");
+  overlayItem.classList.add("overlay-img");
+  overlayItem.src = "/img/icons/play-button.png";
+  if (!enabled) {
+    overlayItem.style.opacity = 0;
+  }
+
+  const overlayContainer = document.createElement("div");
+  overlayContainer.classList.add("overlay-container");
+  overlayContainer.appendChild(overlayItem);
+
+  return overlayContainer;
+};
+
+/**
  * Adds a thumbnail of the file with the given id to the gallery
  * @param {*} id the id of the image as returned from the server
  */
-const addImage = (id) => {
-  const imageContainer = document.createElement("li");
-
-  const img = document.createElement("img");
-  img.classList.add("galleryImage");
-  img.onclick = () => {
+const addImage = (id, isVideo) => {
+  const listItemContainer = document.createElement("li");
+  listItemContainer.onclick = () => {
     window.open(`/preview/${id}`, "_blank");
   };
 
-  imageContainer.appendChild(img);
-  galleryContainer.appendChild(imageContainer);
+  const img = document.createElement("img");
+  img.classList.add("galleryImage");
+
+  const overlayContainer = getPlayButtonOverlayContainer(isVideo);
+  overlayContainer.appendChild(img);
+
+  listItemContainer.appendChild(overlayContainer);
+  galleryContainer.appendChild(listItemContainer);
 
   fetch(`/api/files/thumbnail/${id}`)
     .then((res) => res.blob())
@@ -83,7 +105,11 @@ const loadNextPage = () => {
   )
     .then((response) => response.json())
     .then((json) => {
-      json?.forEach((element) => addImage(element["id"]));
+      json?.forEach((element) => {
+        const elementType = element["fileMimeType"];
+        const isVideo = elementType.includes("video");
+        addImage(element["id"], isVideo);
+      });
     })
     .then(() => (offset += limit))
     .catch((e) => console.error(e));
