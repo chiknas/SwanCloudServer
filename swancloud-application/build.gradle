@@ -6,7 +6,7 @@ dependencies {
 
     implementation project(':swancloud-webapp')
     implementation project(':swancloud-security')
-    implementation project(':swancloud-organiser:runtime')
+    implementation project(':swancloud-organiser:swancloud-organiser-runtime')
 
     implementation 'org.springframework.boot:spring-boot-starter'
 }

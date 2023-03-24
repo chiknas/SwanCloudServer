@@ -7,7 +7,7 @@ jar {
 }
 
 dependencies {
-    implementation project(':swancloud-organiser:api')
+    implementation project(':swancloud-organiser:swancloud-organiser-api')
     implementation project(':swancloud-runtime-common')
 
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
