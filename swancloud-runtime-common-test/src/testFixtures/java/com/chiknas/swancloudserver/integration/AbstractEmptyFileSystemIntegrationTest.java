@@ -19,7 +19,7 @@ import java.io.IOException;
  *     <li>Clean up after ourselves. Destroy the folder and all items inside it</li>
  * </ul>
  */
-@SpringBootTest(properties = {"files.base-path=src/test/resources/emptymockfilesystem/data"}, classes = TestConfig.class)
+@SpringBootTest(classes = TestConfig.class)
 @AutoConfigureMockMvc
 public class AbstractEmptyFileSystemIntegrationTest {
 

@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+import static javax.persistence.GenerationType.IDENTITY;
+
 /**
  * @author nkukn
  * @since 3/28/2021
@@ -16,7 +18,7 @@ import javax.persistence.*;
 public class ThumbnailEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
     @Lob

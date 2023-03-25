@@ -9,4 +9,5 @@ dependencies {
     implementation 'org.bytedeco:javacv-platform:1.5.7'
     implementation 'com.drewnoakes:metadata-extractor:2.18.0'
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+    implementation(libs.liquibase)
 }

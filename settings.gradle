@@ -8,3 +8,10 @@ include 'swancloud-security'
 include 'swancloud-runtime-common'
 include 'swancloud-runtime-common-test'
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            library('liquibase', 'org.liquibase:liquibase-core:4.20.0')
+        }
+    }
+}

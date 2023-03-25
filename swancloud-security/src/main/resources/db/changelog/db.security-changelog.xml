@@ -1,0 +1,50 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet id="security-1" author="admin">
+        <createTable tableName="refresh_tokens">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="token" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expiry_date" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="password_expired" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="true"/>
+            </column>
+            <column name="last_uploaded_file_date" type="DATETIME">
+                <constraints nullable="true"/>
+            </column>
+            <column name="last_uploaded_date" type="DATETIME">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="user_roles">
+            <column name="user_id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="roles" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
