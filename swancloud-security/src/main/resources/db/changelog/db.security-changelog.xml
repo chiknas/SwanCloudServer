@@ -2,6 +2,13 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
     <changeSet id="security-1" author="admin">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="refresh_tokens" />
+            </not>
+        </preConditions>
+
         <createTable tableName="refresh_tokens">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -16,6 +23,17 @@
                 <constraints nullable="true"/>
             </column>
         </createTable>
+
+    </changeSet>
+
+
+    <changeSet id="security-2" author="admin">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="users" />
+            </not>
+        </preConditions>
 
         <createTable tableName="users">
             <column name="id" type="BIGINT" autoIncrement="true">
@@ -37,6 +55,17 @@
                 <constraints nullable="true"/>
             </column>
         </createTable>
+
+    </changeSet>
+
+
+    <changeSet id="security-3" author="admin">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_roles" />
+            </not>
+        </preConditions>
 
         <createTable tableName="user_roles">
             <column name="user_id" type="BIGINT" autoIncrement="true">

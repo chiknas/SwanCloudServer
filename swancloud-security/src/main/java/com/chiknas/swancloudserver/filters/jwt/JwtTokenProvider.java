@@ -87,7 +87,7 @@ public class JwtTokenProvider {
         try {
             Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
-        } catch (SignatureException e) {
+        } catch (SecurityException e) {
             log.debug("Invalid JWT signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
             log.debug("Invalid JWT token: {}", e.getMessage());
