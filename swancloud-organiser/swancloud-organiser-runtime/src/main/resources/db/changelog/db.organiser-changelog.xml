@@ -1,7 +1,14 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
     <changeSet id="organiser-1" author="admin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="file_metadata" />
+            </not>
+        </preConditions>
+        
         <createTable tableName="file_metadata">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -20,6 +27,16 @@
             </column>
         </createTable>
 
+    </changeSet>
+
+    <changeSet id="organiser-2" author="admin">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="file_thumbnail" />
+            </not>
+        </preConditions>
+
         <createTable tableName="file_thumbnail">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -31,7 +48,15 @@
     </changeSet>
 
 
-    <changeSet id="organiser-2" author="admin">
+    <changeSet id="organiser-3" author="admin">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="file_metadata" indexName="created_date_index" />
+            </not>
+        </preConditions>
+
+
         <createIndex tableName="file_metadata" indexName="created_date_index">
             <column name="created_date" descending="true"/>
             <column name="id" descending="true"/>
