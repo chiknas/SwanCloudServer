@@ -8,6 +8,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+import static javax.persistence.GenerationType.IDENTITY;
+
 @Getter
 @Setter
 @Table(name = "file_metadata", indexes = @Index(columnList = "created_date DESC, id DESC"))
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 public class FileMetadataEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
     @Column(name = "file_name")

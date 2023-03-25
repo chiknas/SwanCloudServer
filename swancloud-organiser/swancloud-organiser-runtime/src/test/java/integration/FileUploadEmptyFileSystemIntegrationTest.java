@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Ensures we can upload images and videos.
  * Ensures we can view these files listed on the api.
  */
+@TestPropertySource(properties = {"files.base-path=src/test/resources/emptymockfilesystem/data"})
 public class FileUploadEmptyFileSystemIntegrationTest extends AbstractEmptyFileSystemIntegrationTest {
 
     @Autowired

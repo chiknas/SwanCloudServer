@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 1. the system should index existing files
  * 2. the system should create thumbnails for existing files
  */
+@TestPropertySource(properties = "files.base-path=src/test/resources/mockfilesystem")
 public class SystemStartupIntegrationTest extends AbstractFileSystemIntegrationTest {
 
     @Autowired

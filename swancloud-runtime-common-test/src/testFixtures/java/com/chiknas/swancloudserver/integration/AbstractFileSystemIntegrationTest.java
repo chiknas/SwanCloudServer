@@ -5,6 +5,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 
 @AutoConfigureMockMvc
-@SpringBootTest(properties = {"files.base-path=src/test/resources/mockfilesystem"}, classes = TestConfig.class)
+@SpringBootTest(classes = TestConfig.class)
 public class AbstractFileSystemIntegrationTest {
 }
