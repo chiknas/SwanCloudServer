@@ -10,12 +10,12 @@ Run the server and visit [Swagger 3](http://localhost:8080/swagger-ui/index.html
 1. Build the project: `./gradlew build`
 2. Update `application.properties` with your settings
 3. Startup the server: `./gradlew bootRun`
-4. Application api is up at: `http://locahost:8080/api`
+4. Application api is up at: [localhost:8080](http://localhost:8080/)
 
 ## Spring Profiles
 
 1. production = profile to be switch the app to production mode. Current functionality on production mode:
-    * API keys enabled: the server will only respond to known clients. set this up with the security.api.keys property
+    * Baked in accounts: the server will only respond to known clients. set this up with the admin-emails property
     * HTTPS only (check security section to setup certificate vars in this mode)
 
 ## Env variables
