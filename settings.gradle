@@ -22,14 +22,29 @@ dependencyResolutionManagement {
 
             library('jsr305', 'com.google.code.findbugs:jsr305:3.0.2')
 
+            // JSON Web Token (jwt) library helpers
             version('jjwt', '0.11.5')
             library('jjwt-api', 'io.jsonwebtoken', 'jjwt-api').versionRef('jjwt')
             library('jjwt-impl', 'io.jsonwebtoken', 'jjwt-impl').versionRef('jjwt')
             library('jjwt-jackson', 'io.jsonwebtoken', 'jjwt-jackson').versionRef('jjwt')
+            bundle('jjwtRuntime', ['jjwt-impl', 'jjwt-jackson'])
 
+            // QR Code processing library
             version('zxing', '3.5.1')
             library('zxing-core', 'com.google.zxing', 'core').versionRef('zxing')
             library('zxing-javase', 'com.google.zxing', 'javase').versionRef('zxing')
+
+            // JavaCV with FFMPEG runtime libraries to allow video processing.
+            // https://github.com/bytedeco/javacv
+            // https://github.com/bytedeco/javacpp-presets/wiki/Reducing-the-Number-of-Dependencies
+            // https://github.com/bytedeco/javacv/issues/1186
+            version('javacv', '1.5.7')
+            library('javacv', 'org.bytedeco', 'javacv').versionRef('javacv')
+
+            library('ffmpeg', 'org.bytedeco:ffmpeg:5.0-1.5.7')
+            library('javacv-javacpp', 'org.bytedeco', 'javacpp').versionRef('javacv')
+            bundle('ffmpegPlatform', ['ffmpeg', 'javacv-javacpp'])
+
         }
     }
 }

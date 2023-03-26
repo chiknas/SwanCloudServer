@@ -5,7 +5,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation(libs.h2)
+
     implementation(libs.javacv)
+    runtimeOnly(libs.bundles.ffmpegPlatform){artifact {}.setClassifier("windows-x86_64")}
+    runtimeOnly(libs.bundles.ffmpegPlatform){artifact {}.setClassifier("linux-arm64")}
+    runtimeOnly(libs.bundles.ffmpegPlatform){artifact {}.setClassifier("linux-armhf")}
+    runtimeOnly(libs.bundles.ffmpegPlatform){artifact {}.setClassifier("linux-x86")}
+    runtimeOnly(libs.bundles.ffmpegPlatform){artifact {}.setClassifier("linux-x86_64")}
+
+
     implementation(libs.metadataExtractor)
     implementation(libs.springdoc)
     implementation(libs.liquibase)
