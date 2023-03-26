@@ -18,7 +18,6 @@ public class FileMetadataEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "id", updatable = false, nullable = false)
     private Integer id;
 
     @Column(name = "file_name")
