@@ -16,7 +16,6 @@ dependencyResolutionManagement {
             library('commons-lang', 'org.apache.commons:commons-lang3:3.12.0')
             library('lombok', 'org.projectlombok:lombok:1.18.20')
             library('h2', 'com.h2database:h2:2.1.214')
-            library('javacv', 'org.bytedeco:javacv-platform:1.5.7')
             library('metadataExtractor', 'com.drewnoakes:metadata-extractor:2.18.0')
             library('springdoc', 'org.springdoc:springdoc-openapi-ui:1.6.11')
 
