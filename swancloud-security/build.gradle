@@ -19,6 +19,5 @@ dependencies {
     implementation(libs.zxing.javase)
     implementation(libs.liquibase)
 
-    runtimeOnly(libs.jjwt.impl)
-    runtimeOnly(libs.jjwt.jackson)
+    runtimeOnly(libs.bundles.jjwtRuntime)
 }
