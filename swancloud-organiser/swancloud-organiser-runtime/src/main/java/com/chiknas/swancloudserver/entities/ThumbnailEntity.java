@@ -19,6 +19,7 @@ public class ThumbnailEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
+    @Column(name = "id")
     private Integer id;
 
     @Lob
