@@ -10,11 +10,6 @@ import org.springframework.context.annotation.Import;
  * through their configuration classes.
  * Use only runtime modules in here as anything else is only to be used at compile time.
  */
-@Import({
-        WebappConfiguration.class,
-        OrganiserRuntimeConfiguration.class,
-        SecurityConfiguration.class
-})
 @SpringBootApplication(scanBasePackages = "com.chiknas.swancloudserver",
         exclude = {SecurityAutoConfiguration.class})
 public class SwancloudApplication {

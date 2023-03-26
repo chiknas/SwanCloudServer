@@ -4,9 +4,10 @@ jar {
 
 dependencies {
 
-    implementation project(':swancloud-webapp')
-    implementation project(':swancloud-security')
-    implementation project(':swancloud-organiser:swancloud-organiser-runtime')
+    runtimeOnly project(':swancloud-webapp')
+    runtimeOnly project(':swancloud-security')
+    runtimeOnly project(':swancloud-organiser:swancloud-organiser-runtime')
+    runtimeOnly(libs.h2)
 
     implementation 'org.springframework.boot:spring-boot-starter'
 }

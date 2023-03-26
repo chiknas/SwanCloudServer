@@ -1,7 +1,6 @@
 dependencies {
     implementation project(':swancloud-organiser:swancloud-organiser-api')
     implementation project(':swancloud-runtime-common')
-    testImplementation(testFixtures(project(':swancloud-runtime-common-test')))
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -10,4 +9,6 @@ dependencies {
     implementation(libs.metadataExtractor)
     implementation(libs.springdoc)
     implementation(libs.liquibase)
+
+    testImplementation(testFixtures(project(':swancloud-runtime-common-test')))
 }
