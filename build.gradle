@@ -30,10 +30,10 @@ subprojects {
     }
 
     dependencies {
-        implementation 'commons-io:commons-io:2.11.0'
+        implementation(libs.commons.io)
 
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+        compileOnly(libs.lombok)
+        annotationProcessor(libs.lombok)
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 

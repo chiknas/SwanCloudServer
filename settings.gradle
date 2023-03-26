@@ -12,6 +12,23 @@ dependencyResolutionManagement {
     versionCatalogs {
         libs {
             library('liquibase', 'org.liquibase:liquibase-core:4.20.0')
+            library('commons-io', 'commons-io:commons-io:2.11.0')
+            library('commons-lang', 'org.apache.commons:commons-lang3:3.12.0')
+            library('lombok', 'org.projectlombok:lombok:1.18.20')
+            library('h2', 'com.h2database:h2:2.1.214')
+            library('javacv', 'org.bytedeco:javacv-platform:1.5.7')
+            library('metadataExtractor', 'com.drewnoakes:metadata-extractor:2.18.0')
+            library('springdoc', 'org.springdoc:springdoc-openapi-ui:1.6.11')
+            library('jsr305', 'com.google.code.findbugs:jsr305:3.0.2')
+
+            version('jjwt', '0.11.5')
+            library('jjwt-api', 'io.jsonwebtoken', 'jjwt-api').versionRef('jjwt')
+            library('jjwt-impl', 'io.jsonwebtoken', 'jjwt-impl').versionRef('jjwt')
+            library('jjwt-jackson', 'io.jsonwebtoken', 'jjwt-jackson').versionRef('jjwt')
+
+            version('zxing', '3.5.1')
+            library('zxing-core', 'com.google.zxing', 'core').versionRef('zxing')
+            library('zxing-javase', 'com.google.zxing', 'javase').versionRef('zxing')
         }
     }
 }
