@@ -4,6 +4,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation(libs.h2)
 
     implementation(libs.javacv)
     runtimeOnly(libs.bundles.ffmpegPlatform){artifact {}.setClassifier("windows-x86_64")}
