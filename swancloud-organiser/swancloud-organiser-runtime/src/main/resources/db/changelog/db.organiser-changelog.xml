@@ -62,4 +62,34 @@
             <column name="id" descending="true"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="organiser-4" author="admin">
+
+        <createTable tableName="geolocation">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="longitude" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="file_metadata">
+            <column name="geolocation_id" type="BIGINT">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+    </changeSet>
+
+    <changeSet id="organiser-5" author="admin">
+
+        <addForeignKeyConstraint baseTableName="file_metadata" baseColumnNames="geolocation_id"
+                                 constraintName="fk_geolocation_id" referencedTableName="geolocation"
+                                 referencedColumnNames="id" />
+
+    </changeSet>
 </databaseChangeLog>

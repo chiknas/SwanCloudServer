@@ -1,12 +1,14 @@
 package com.chiknas.swancloudserver.converters;
 
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
+import com.chiknas.swancloudserver.entities.GeolocationEntity;
 import com.chiknas.swancloudserver.services.helpers.FilesHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Slf4j
@@ -21,6 +23,12 @@ public class FileMetadataConverter implements Converter<File, FileMetadataEntity
         fileMetadataEntity.setPath(file.getAbsolutePath());
         FilesHelper.getCreationDate(file).ifPresentOrElse(fileMetadataEntity::setCreatedDate,
                 () -> fileMetadataEntity.setCreatedDate(LocalDate.EPOCH.atStartOfDay()));
+        FilesHelper.getGeolocation(file).ifPresent(geolocation ->
+                fileMetadataEntity.setGeolocation(GeolocationEntity.builder()
+                        .latitude(BigDecimal.valueOf(geolocation.getLatitude()))
+                        .longitude(BigDecimal.valueOf(geolocation.getLongitude()))
+                        .build())
+        );
 
         return fileMetadataEntity;
     }
