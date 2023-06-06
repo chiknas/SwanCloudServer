@@ -72,7 +72,8 @@ public class FilesHelper {
         try {
             return Optional.of(ImageMetadataReader.readMetadata(file));
         } catch (Exception e) {
-            throw new RuntimeException("Failed reading metadata for file: " + file, e);
+            log.error("Failed reading metadata for file: " + file, e);
+            return Optional.empty();
         }
     }
 
