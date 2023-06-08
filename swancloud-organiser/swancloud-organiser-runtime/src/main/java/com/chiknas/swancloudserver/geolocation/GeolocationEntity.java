@@ -1,5 +1,6 @@
-package com.chiknas.swancloudserver.entities;
+package com.chiknas.swancloudserver.geolocation;
 
+import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import lombok.*;
 
 import javax.persistence.*;

@@ -1,7 +1,7 @@
 package com.chiknas.swancloudserver.converters;
 
 import com.chiknas.swancloudserver.entities.FileMetadataEntity;
-import com.chiknas.swancloudserver.entities.GeolocationEntity;
+import com.chiknas.swancloudserver.geolocation.GeolocationEntity;
 import com.chiknas.swancloudserver.services.helpers.FilesHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;

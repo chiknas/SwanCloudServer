@@ -94,6 +94,6 @@
     </changeSet>
 
     <changeSet id="organiser-6" author="admin">
-        <customChange class="com.chiknas.swancloudserver.entities.datamigration.GeolocationMigration"/>
+        <customChange class="com.chiknas.swancloudserver.geolocation.liquibasecustomtaskchange.GeolocationMigration"/>
     </changeSet>
 </databaseChangeLog>

@@ -1,4 +1,4 @@
-package com.chiknas.swancloudserver.entities.datamigration;
+package com.chiknas.swancloudserver.geolocation.liquibasecustomtaskchange;
 
 import com.chiknas.swancloudserver.services.helpers.FilesHelper;
 import com.drew.lang.GeoLocation;
@@ -15,7 +15,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-
+/**
+ * Extracts longitude/latitude information from all the files in file_metadata table.
+ * Creates the new geolocation entity when possible and populates the table.
+ */
 public class GeolocationMigration implements CustomTaskChange {
 
     private static final String SELECT_FILES = "SELECT * FROM file_metadata";

@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver.entities;
 
+import com.chiknas.swancloudserver.geolocation.GeolocationEntity;
 import lombok.Getter;
 import lombok.Setter;
 
