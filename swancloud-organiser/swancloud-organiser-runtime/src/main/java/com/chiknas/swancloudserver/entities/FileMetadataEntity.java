@@ -1,5 +1,6 @@
 package com.chiknas.swancloudserver.entities;
 
+import com.chiknas.swancloudserver.geolocation.GeolocationEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +33,11 @@ public class FileMetadataEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
     private ThumbnailEntity thumbnail;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "geolocation_id", referencedColumnName = "id")
+    private GeolocationEntity geolocation;
+
 
     public File getFile() {
         return Path.of(this.getPath()).toFile();

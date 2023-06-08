@@ -32,6 +32,7 @@ subprojects {
 
     dependencies {
         implementation(libs.commons.io)
+        implementation(libs.guava)
 
         compileOnly(libs.lombok)
         annotationProcessor(libs.lombok)
