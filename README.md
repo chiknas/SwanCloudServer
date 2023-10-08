@@ -1,5 +1,6 @@
 # Swan Cloud Server ![CircleCI Build Status](https://img.shields.io/circleci/build/github/chiknas/SwanCloudServer)
 
+
 Spring boot api to handle photo/video files upload and organisation. The server will save uploaded media files in the
 file system that is running on and in the specified base path (see env variables below). It organises the media files
 based on the date the photo/video was taken.  
