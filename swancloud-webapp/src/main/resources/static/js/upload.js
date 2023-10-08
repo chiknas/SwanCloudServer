@@ -1,3 +1,4 @@
+// wakelock.js is required as an import
 const filesInput = document.getElementById("files");
 const uploadPopup = document.getElementById("upload-popup");
 const uploadPopupContent = document.getElementById("upload-popup-content");
@@ -8,7 +9,7 @@ function enablePopup(enabled) {
   uploadPopup.style.visibility = enabled ? "visible" : "hidden";
   uploadPopup.style.opacity = enabled ? "1" : "0";
 
-  // Reload the page if we are closing thi popup
+  // Reload the page if we are closing this popup
   if (!enabled) {
     location.reload();
   }
@@ -18,6 +19,7 @@ function enablePopup(enabled) {
 // No need to click a button or something.
 filesInput.addEventListener("change", () => {
   enablePopup(true);
+  lockWakeState();
 
   const data = filesInput.files;
   const formData = new FormData();
@@ -49,5 +51,6 @@ filesInput.addEventListener("change", () => {
       // Enable popup close button
       uploadPopupClose.style.visibility = "visible";
       uploadPopupClose.style.opacity = "1";
+      releaseWakeState();
     });
 });
