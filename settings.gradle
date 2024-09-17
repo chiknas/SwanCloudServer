@@ -44,6 +44,9 @@ dependencyResolutionManagement {
             library('javacv-javacpp', 'org.bytedeco', 'javacpp').versionRef('javacv')
             bundle('ffmpegPlatform', ['ffmpeg', 'javacv-javacpp'])
 
+            library('nominatim', 'fr.dudie:nominatim-api:3.4')
+            library('guava', 'com.google.guava:guava:32.0.0-jre')
+
         }
     }
 }

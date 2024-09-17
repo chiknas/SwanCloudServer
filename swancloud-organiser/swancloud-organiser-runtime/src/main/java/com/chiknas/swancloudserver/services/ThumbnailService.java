@@ -1,6 +1,7 @@
 package com.chiknas.swancloudserver.services;
 
 import com.chiknas.swancloudserver.dto.FileMetadataDTO;
+import com.chiknas.swancloudserver.entities.FileMetadataEntity;
 import com.chiknas.swancloudserver.entities.ThumbnailEntity;
 import com.chiknas.swancloudserver.repositories.FileMetadataRepository;
 import com.chiknas.swancloudserver.repositories.specifications.FileMetadataSpecification;
@@ -54,13 +55,19 @@ public class ThumbnailService {
                         Sort.by(Sort.Direction.DESC, "createdDate")
                 )
                 .parallelStream()
-                .forEach(fileMetadataEntity -> {
-                    File file = Path.of(fileMetadataEntity.getPath()).toFile();
-                    getThumbnail(file).ifPresent(fileMetadataEntity::setThumbnail);
-                    fileMetadataRepository.saveAndFlush(fileMetadataEntity);
-                });
+                .forEach(this::generateThumbnail);
 
         log.info("Thumbnail update completed in: {}seconds.", (System.currentTimeMillis() - startTime) / 1000);
+    }
+
+    private void generateThumbnail(FileMetadataEntity fileMetadataEntity) {
+        try {
+            File file = Path.of(fileMetadataEntity.getPath()).toFile();
+            getThumbnail(file).ifPresent(fileMetadataEntity::setThumbnail);
+            fileMetadataRepository.saveAndFlush(fileMetadataEntity);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

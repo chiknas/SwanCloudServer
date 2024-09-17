@@ -2,8 +2,10 @@ package com.chiknas.swancloudserver.services.helpers;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.lang.GeoLocation;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.mp4.Mp4Directory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,6 +53,28 @@ public class FilesHelper {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Searches the metadata of the file to find the location a media file was taken.
+     * Uses {@link GpsDirectory}
+     */
+    public static Optional<GeoLocation> getGeolocation(File file) {
+        return extractMetadata(file)
+                .flatMap(metadata -> {
+                    GpsDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+                    return Optional.ofNullable(exifSubIFDDirectory).map(GpsDirectory::getGeoLocation);
+                });
+    }
+
+
+    private static Optional<Metadata> extractMetadata(File file) {
+        try {
+            return Optional.of(ImageMetadataReader.readMetadata(file));
+        } catch (Exception e) {
+            log.error("Failed reading metadata for file: " + file, e);
+            return Optional.empty();
+        }
     }
 
     private static Optional<LocalDateTime> extractCreationDate(Metadata metadata) {
